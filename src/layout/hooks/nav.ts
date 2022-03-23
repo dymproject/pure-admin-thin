@@ -3,26 +3,14 @@ import { router } from "/@/router";
 import { getConfig } from "/@/config";
 import { emitter } from "/@/utils/mitt";
 import { routeMetaType } from "../types";
-import { transformI18n } from "/@/plugins/i18n";
 import { storageSession } from "/@/utils/storage";
 import { useAppStoreHook } from "/@/store/modules/app";
 import { remainingPaths } from "/@/router/modules/index";
-import { useEpThemeStoreHook } from "/@/store/modules/epTheme";
 
 export function useNav() {
   const pureApp = useAppStoreHook();
   // 用户名
   const usename: string = storageSession.getItem("info")?.username;
-
-  // 设置国际化选中后的样式
-  const getDropdownItemStyle = computed(() => {
-    return (locale, t) => {
-      return {
-        background: locale === t ? useEpThemeStoreHook().epThemeColor : "",
-        color: locale === t ? "#f4f4f5" : "#000"
-      };
-    };
-  });
 
   const isCollapse = computed(() => {
     return !pureApp.getSidebarStatus;
@@ -31,9 +19,8 @@ export function useNav() {
   // 动态title
   function changeTitle(meta: routeMetaType) {
     const Title = getConfig().Title;
-    if (Title)
-      document.title = `${transformI18n(meta.title, meta.i18n)} | ${Title}`;
-    else document.title = transformI18n(meta.title, meta.i18n);
+    if (Title) document.title = `${meta.title} | ${Title}`;
+    else document.title = meta.title;
   }
 
   // 退出登录
@@ -112,7 +99,6 @@ export function useNav() {
     resolvePath,
     isCollapse,
     pureApp,
-    usename,
-    getDropdownItemStyle
+    usename
   };
 }
