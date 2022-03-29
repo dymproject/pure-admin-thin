@@ -1,5 +1,9 @@
-import { http } from "../utils/http";
+import request from "../utils/http/index";
 
 export const getAsyncRoutes = (params?: object) => {
-  return http.request("get", "/getAsyncRoutes", { params });
+  return request({
+    url: "/user/menus",
+    method: "get",
+    params
+  });
 };

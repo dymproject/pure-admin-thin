@@ -7,19 +7,21 @@ import { addClass, removeClass } from "/@/utils/operate";
 import bg from "/@/assets/login/bg.png";
 import avatar from "/@/assets/login/avatar.svg?component";
 import illustration from "/@/assets/login/illustration.svg?component";
+import { getLogin } from "/@/api/user";
+import { setToken } from "../utils/auth";
 
 const router = useRouter();
 
-let user = ref("admin");
+let user = ref("dym");
 let pwd = ref("123456");
 
 const onLogin = (): void => {
-  storageSession.setItem("info", {
-    username: "admin",
-    accessToken: "eyJhbGciOiJIUzUxMiJ9.test"
+  getLogin({ account: user.value, password: pwd.value }).then(result => {
+    storageSession.setItem("info", result);
+    setToken(result);
+    initRouter();
+    router.push("/");
   });
-  initRouter("admin").then(() => {});
-  router.push("/");
 };
 
 function onUserFocus() {

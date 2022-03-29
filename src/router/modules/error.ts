@@ -7,6 +7,8 @@ const errorRouter = {
   meta: {
     icon: "information-line",
     title: "错误页面",
+    // 是否在菜单中显示（可不写，默认true）
+    showLink: false,
     rank: 9
   },
   children: [

@@ -50,7 +50,7 @@ router.beforeEach((to: toRouteType, _from, next) => {
       handleAliveRoute(newMatched);
     }
   }
-  const name = storageSession.getItem("info");
+  const userInfo = storageSession.getItem("info");
   NProgress.start();
   const externalLink = isUrl(to?.name);
   if (!externalLink)
@@ -61,7 +61,7 @@ router.beforeEach((to: toRouteType, _from, next) => {
       // @ts-expect-error
       else document.title = item.meta.title;
     });
-  if (name) {
+  if (userInfo) {
     if (_from?.name) {
       // name为超链接
       if (externalLink) {
@@ -73,7 +73,7 @@ router.beforeEach((to: toRouteType, _from, next) => {
     } else {
       // 刷新
       if (usePermissionStoreHook().wholeMenus.length === 0)
-        initRouter(name.username).then((router: Router) => {
+        initRouter().then((router: Router) => {
           if (!useMultiTagsStoreHook().getMultiTagsCache) {
             const handTag = (
               path: string,

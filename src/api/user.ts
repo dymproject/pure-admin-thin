@@ -1,26 +1,17 @@
-import { http } from "../utils/http";
+import request from "../utils/http/index";
 
-interface userType extends Promise<any> {
-  svg?: string;
-  code?: number;
-  info?: object;
-}
-
-// 获取验证码
-export const getVerify = (): userType => {
-  return http.request("get", "/captcha");
+export const getLogin = (params: object) => {
+  return request({
+    url: "/auth/login",
+    method: "post",
+    data: params
+  });
 };
 
-// 登录
-export const getLogin = (data: object) => {
-  return http.request("post", "/login", { data });
+export const getUserList = (params: object) => {
+  return request({
+    url: "/user/list",
+    method: "get",
+    data: params
+  });
 };
-
-// 刷新token
-export const refreshToken = (data: object) => {
-  return http.request("post", "/refreshToken", { data });
-};
-
-// export const searchVague = (data: object) => {
-//   return http.request("post", "/searchVague", { data });
-// };

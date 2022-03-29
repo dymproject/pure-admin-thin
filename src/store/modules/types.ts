@@ -37,5 +37,7 @@ export type setType = {
 
 export type userType = {
   token: string;
+  refreshToken: string;
+  account: string;
   name?: string;
 };

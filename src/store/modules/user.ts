@@ -2,19 +2,21 @@ import { defineStore } from "pinia";
 import { store } from "/@/store";
 import { userType } from "./types";
 import { router } from "/@/router";
-import { getLogin, refreshToken } from "/@/api/user";
 import { storageLocal, storageSession } from "/@/utils/storage";
-import { getToken, setToken, removeToken } from "/@/utils/auth";
-import { useMultiTagsStoreHook } from "/@/store/modules/multiTags";
+import { getToken, removeToken } from "/@/utils/auth";
 
 const data = getToken();
 let token = "";
 let name = "";
+let account = "";
+let refreshToken = "";
 if (data) {
-  const dataJson = JSON.parse(data);
+  const dataJson = data;
   if (dataJson) {
     token = dataJson?.accessToken;
-    name = dataJson?.name ?? "admin";
+    refreshToken = dataJson?.refreshToken;
+    name = dataJson?.name ?? "佚名";
+    account = dataJson?.account ?? "admin";
   }
 }
 
@@ -22,29 +24,22 @@ export const useUserStore = defineStore({
   id: "pure-user",
   state: (): userType => ({
     token,
+    refreshToken,
+    account,
     name
   }),
   actions: {
-    SET_TOKEN(token) {
+    SET_TOKEN(token: string) {
       this.token = token;
     },
-    SET_NAME(name) {
+    SET_NAME(name: string) {
       this.name = name;
     },
-    // 登入
-    async loginByUsername(data) {
-      return new Promise<void>((resolve, reject) => {
-        getLogin(data)
-          .then(data => {
-            if (data) {
-              setToken(data);
-              resolve();
-            }
-          })
-          .catch(error => {
-            reject(error);
-          });
-      });
+    SET_ACCOUNT(account: string) {
+      this.account = account;
+    },
+    SET_REFRESHTOKEN(refreshToken: string) {
+      this.refreshToken = refreshToken;
     },
     // 登出 清空缓存
     logOut() {
@@ -53,26 +48,7 @@ export const useUserStore = defineStore({
       removeToken();
       storageLocal.clear();
       storageSession.clear();
-      useMultiTagsStoreHook().handleTags("equal", [
-        {
-          path: "/welcome",
-          parentPath: "/",
-          meta: {
-            title: "首页",
-            icon: "home-filled"
-          }
-        }
-      ]);
       router.push("/login");
-    },
-    // 刷新token
-    async refreshToken(data) {
-      return refreshToken(data).then(data => {
-        if (data) {
-          setToken(data);
-          return data;
-        }
-      });
     }
   }
 });

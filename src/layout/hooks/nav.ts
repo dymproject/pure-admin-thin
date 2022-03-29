@@ -10,7 +10,7 @@ import { remainingPaths } from "/@/router/modules/index";
 export function useNav() {
   const pureApp = useAppStoreHook();
   // 用户名
-  const usename: string = storageSession.getItem("info")?.username;
+  const usename: string = storageSession.getItem("info")?.name;
 
   const isCollapse = computed(() => {
     return !pureApp.getSidebarStatus;
