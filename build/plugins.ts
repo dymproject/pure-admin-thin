@@ -6,6 +6,7 @@ import vueJsx from "@vitejs/plugin-vue-jsx";
 import WindiCSS from "vite-plugin-windicss";
 import { viteMockServe } from "vite-plugin-mock";
 import liveReload from "vite-plugin-live-reload";
+import styleImport from "vite-plugin-style-import";
 import ElementPlus from "unplugin-element-plus/vite";
 import { visualizer } from "rollup-plugin-visualizer";
 import removeConsole from "vite-plugin-remove-console";
@@ -83,6 +84,18 @@ export function getPluginsList(command, VITE_LEGACY) {
     }),
     // svg组件化支持
     svgLoader(),
+    // 按需加载vxe-table
+    styleImport({
+      libs: [
+        {
+          libraryName: "vxe-table",
+          esModule: true,
+          ensureStyleFile: true,
+          resolveComponent: name => `vxe-table/es/${name}`,
+          resolveStyle: name => `vxe-table/es/${name}/style.css`
+        }
+      ]
+    }),
     ElementPlus({}),
     // mock支持
     viteMockServe({

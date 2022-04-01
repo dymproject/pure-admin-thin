@@ -4,6 +4,7 @@ import { setupStore } from "/@/store";
 import { getServerConfig } from "./config";
 import { createApp, Directive } from "vue";
 import { MotionPlugin } from "@vueuse/motion";
+import { useTable } from "../src/plugins/vxe-table";
 import { useElementPlus } from "../src/plugins/element-plus";
 import { injectResponsiveStorage } from "/@/utils/storage/responsive";
 
@@ -40,6 +41,6 @@ getServerConfig(app).then(async config => {
   await router.isReady();
   injectResponsiveStorage(app, config);
   setupStore(app);
-  app.use(MotionPlugin).use(useElementPlus);
+  app.use(MotionPlugin).use(useElementPlus).use(useTable);
   app.mount("#app");
 });
