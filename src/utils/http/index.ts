@@ -3,11 +3,10 @@ import Axios from "axios";
 // import qs from "qs";
 import NProgress from "../progress";
 import { loadEnv } from "@build/index";
-import { getToken } from "/@/utils/auth";
-import { useUserStoreHook } from "/@/store/modules/user";
-import { ElLoading, ElMessage } from "element-plus";
+import { getToken, setToken } from "/@/utils/auth";
+import { router } from "/@/router";
+import { ElMessage } from "element-plus";
 
-let loading;
 // create an axios instance
 const service = Axios.create({
   baseURL: loadEnv().VITE_PROXY_DOMAIN_REAL + loadEnv().VITE_PROXY_DOMAIN, // url = base url + request url
@@ -20,15 +19,10 @@ service.interceptors.request.use(
   config => {
     //开启进度条
     NProgress.start();
-    loading = ElLoading.service({
-      lock: true,
-      text: "Loading",
-      background: "rgba(0, 0, 0, 0.7)"
-    });
     const tokenData = getToken();
     if (tokenData) {
       const now = new Date().getTime();
-      const expired = (tokenData.expires - now) / (1000 * 60) <= 10;
+      const expired = (tokenData.expires - now) / (1000 * 60) <= 0;
       if (expired) {
         config.headers["X-Authorization"] = "Bearer " + tokenData.refreshToken;
       }
@@ -55,32 +49,41 @@ service.interceptors.response.use(
    * You can also judge the status by HTTP Status Code
    */
   response => {
-    const { headers } = response;
-    const { statusCode, errors, data } = response.data;
+    const { headers, status, config } = response;
+    const { responseType } = config;
+    const { code, extras, data, success, message } = response.data;
     // 关闭进度条动画
     NProgress.done();
-    loading.close();
     //刷新token时
     const accessToken = headers["access-token"];
-    if (accessToken) {
-      useUserStoreHook().SET_TOKEN(accessToken.toString());
-    }
     const refreshToken = headers["x-access-token"];
-    if (refreshToken) {
-      useUserStoreHook().SET_REFRESHTOKEN(refreshToken.toString());
+    if (accessToken != undefined && accessToken != undefined) {
+      const tokenData = getToken();
+      if (tokenData) {
+        tokenData.refreshToken = refreshToken;
+        tokenData.accessToken = accessToken;
+        setToken(tokenData);
+      }
     }
-    if (statusCode == 401) {
-      useUserStoreHook().logOut();
-    } else if (statusCode == 200) {
-      return data;
-    } else {
-      ElMessage.error(errors);
-      return Promise.reject(errors);
+    console.log(response);
+    if (status == 200) {
+      //先判断是否是文件流
+      if (responseType == "blob") {
+        return response;
+      } else if (success) {
+        return data;
+      } else {
+        if (code == 401) {
+          router.replace("/login");
+        } else {
+          ElMessage.error(message);
+          return Promise.reject(extras);
+        }
+      }
     }
   },
   error => {
     ElMessage.error(error.toString());
-    loading.close();
     return Promise.reject(error);
   }
 );

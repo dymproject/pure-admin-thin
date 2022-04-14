@@ -12,6 +12,7 @@ import { useTimeoutFn } from "@vueuse/core";
 import { RouteConfigs } from "/@/layout/types";
 import { buildHierarchyTree } from "/@/utils/tree";
 import { usePermissionStoreHook } from "/@/store/modules/permission";
+import { storageSession } from "../utils/storage";
 const Layout = () => import("/@/layout/index.vue");
 const IFrame = () => import("/@/layout/frameView.vue");
 // https://cn.vitejs.dev/guide/features.html#glob-import
@@ -274,10 +275,10 @@ function getHistoryMode(): RouterHistory {
 // 是否有权限
 function hasPermissions(value: Array<string>): boolean {
   if (value && value instanceof Array && value.length > 0) {
-    const roles = usePermissionStoreHook().buttonAuth;
+    const securities = storageSession.getItem("security");
     const permissionRoles = value;
 
-    const hasPermission = roles.some(role => {
+    const hasPermission = securities.some(role => {
       return permissionRoles.includes(role);
     });
 

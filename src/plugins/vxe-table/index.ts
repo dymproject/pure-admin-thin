@@ -48,10 +48,12 @@ import {
 
 // 全局默认参数
 VXETable.setup({
-  size: "medium",
+  size: "small",
   version: 0,
   zIndex: 1002,
   table: {
+    border: true,
+    round: true,
     // 自动监听父元素的变化去重新计算表格
     autoResize: true,
     // 鼠标移到行是否要高亮显示

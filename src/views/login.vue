@@ -7,8 +7,9 @@ import { addClass, removeClass } from "/@/utils/operate";
 import bg from "/@/assets/login/bg.png";
 import avatar from "/@/assets/login/avatar.svg?component";
 import illustration from "/@/assets/login/illustration.svg?component";
-import { getLogin } from "/@/api/user";
+import { getLogin, getSecurities } from "/@/api/user";
 import { setToken } from "../utils/auth";
+import { ElLoading } from "element-plus";
 
 const router = useRouter();
 
@@ -16,12 +17,25 @@ let user = ref("dym");
 let pwd = ref("123456");
 
 const onLogin = (): void => {
-  getLogin({ account: user.value, password: pwd.value }).then(result => {
-    storageSession.setItem("info", result);
-    setToken(result);
-    initRouter();
-    router.push("/");
+  const loading = ElLoading.service({
+    lock: true,
+    text: "Loading",
+    background: "rgba(0, 0, 0, 0.7)"
   });
+  getLogin({ account: user.value, password: pwd.value })
+    .then(result => {
+      storageSession.setItem("info", result);
+      setToken(result);
+      initRouter();
+      getSecurities().then((result: any) => {
+        storageSession.setItem("security", result);
+      });
+      loading.close();
+      router.push("/");
+    })
+    .catch(() => {
+      loading.close();
+    });
 };
 
 function onUserFocus() {

@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 import { store } from "/@/store";
 import { userType } from "./types";
 import { router } from "/@/router";
-import { storageLocal, storageSession } from "/@/utils/storage";
 import { getToken, removeToken } from "/@/utils/auth";
 
 const data = getToken();
@@ -43,11 +42,7 @@ export const useUserStore = defineStore({
     },
     // 登出 清空缓存
     logOut() {
-      this.token = "";
-      this.name = "";
       removeToken();
-      storageLocal.clear();
-      storageSession.clear();
       router.push("/login");
     }
   }

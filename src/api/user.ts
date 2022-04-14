@@ -8,10 +8,57 @@ export const getLogin = (params: object) => {
   });
 };
 
-export const getUserList = (params: object) => {
+export const getSecurities = () => {
+  return request({
+    url: "user/securities",
+    method: "get"
+  });
+};
+
+export const getUserList = (params: any) => {
   return request({
     url: "/user/list",
     method: "get",
-    data: params
+    params
+  });
+};
+
+export const submitUser = (params: any) => {
+  if (params.id) {
+    return request({
+      url: "/user/" + params.id + "/modify",
+      method: "put",
+      data: params
+    });
+  } else {
+    return request({
+      url: "/user/add",
+      method: "post",
+      data: params
+    });
+  }
+};
+
+export const deleteUser = (params: any) => {
+  return request({
+    url: "/user",
+    method: "delete",
+    params
+  });
+};
+
+export const importUser = (params: any) => {
+  return request({
+    url: "/user/batch-add/" + params,
+    method: "post"
+  });
+};
+
+export const exportUserList = (params: any) => {
+  return request({
+    url: "/user/export",
+    method: "get",
+    params,
+    responseType: "blob"
   });
 };
