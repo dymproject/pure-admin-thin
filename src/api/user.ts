@@ -10,7 +10,7 @@ export const getLogin = (params: object) => {
 
 export const getSecurities = () => {
   return request({
-    url: "user/securities",
+    url: "auth/securities",
     method: "get"
   });
 };

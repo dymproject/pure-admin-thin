@@ -3,9 +3,8 @@ import Axios from "axios";
 // import qs from "qs";
 import NProgress from "../progress";
 import { loadEnv } from "@build/index";
-import { getToken, setToken } from "/@/utils/auth";
-import { router } from "/@/router";
-import { ElMessage } from "element-plus";
+import { getToken, setToken, removeToken } from "/@/utils/auth";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 // create an axios instance
 const service = Axios.create({
@@ -74,9 +73,19 @@ service.interceptors.response.use(
         return data;
       } else {
         if (code == 401) {
-          router.replace("/login");
+          ElMessageBox.confirm("长时间未操作，请重新登录", "提醒", {
+            confirmButtonText: "返回登录",
+            type: "warning"
+          })
+            .then(() => {
+              removeToken();
+              location.reload();
+            })
+            .catch(() => {
+              return Promise.reject(extras);
+            });
         } else {
-          ElMessage.error(message);
+          ElMessage.error(JSON.stringify(message));
           return Promise.reject(extras);
         }
       }

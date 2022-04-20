@@ -58,5 +58,5 @@ export function setToken(data) {
 // 删除token
 export function removeToken() {
   Cookies.remove(TokenKey);
-  sessionStorage.removeItem(TokenKey);
+  sessionStorage.removeItem("info");
 }

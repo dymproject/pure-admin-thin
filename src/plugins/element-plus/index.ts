@@ -41,7 +41,12 @@ import {
   ElSteps,
   ElLink,
   ElUpload,
-  ElResult
+  ElResult,
+  ElContainer,
+  ElMain,
+  ElAside,
+  ElHeader,
+  ElTree
 } from "element-plus";
 
 // Directives
@@ -86,7 +91,12 @@ const components = [
   ElSteps,
   ElLink,
   ElUpload,
-  ElResult
+  ElResult,
+  ElContainer,
+  ElMain,
+  ElAside,
+  ElHeader,
+  ElTree
 ];
 
 export function useElementPlus(app: App) {

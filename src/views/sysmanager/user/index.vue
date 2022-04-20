@@ -18,7 +18,7 @@ import {
 } from "/@/api/user";
 import { downloadFile } from "/@/utils/download";
 
-const $userOption = reactive({
+const $pageOption = reactive({
   searchData: {
     name: "",
     telephone: "",
@@ -29,7 +29,7 @@ const $userOption = reactive({
     total: 0,
     data: []
   },
-  userInfoModal: {
+  infoOption: {
     showModal: false,
     submitLoading: false,
     selectRow: null
@@ -83,12 +83,12 @@ const $userOption = reactive({
     {
       field: "operate",
       align: "center",
-      width: 220,
+      width: 150,
       title: "操作",
       slots: { default: "operate" }
     }
   ] as VxeColumnProps[],
-  importOption: {
+  importModal: {
     showModal: false,
     stepActive: 0,
     showNext: false,
@@ -99,24 +99,24 @@ const $userOption = reactive({
 });
 
 const getList = () => {
-  getUserList($userOption.searchData).then((result: any) => {
+  getUserList($pageOption.searchData).then((result: any) => {
     const { items } = result;
     const { totalCount } = result;
-    $userOption.pagination.data = items;
-    $userOption.pagination.total = totalCount;
+    $pageOption.pagination.data = items;
+    $pageOption.pagination.total = totalCount;
   });
 };
 getList();
-const handlePageChange: VxePagerEvents.PageChange = ({
+const pageChangeEvent: VxePagerEvents.PageChange = ({
   currentPage,
   pageSize
 }) => {
-  $userOption.searchData.pageIndex = currentPage;
-  $userOption.searchData.pageSize = pageSize;
+  $pageOption.searchData.pageIndex = currentPage;
+  $pageOption.searchData.pageSize = pageSize;
   getList();
 };
 const insertEvent = () => {
-  $userOption.formData = {
+  $pageOption.formData = {
     id: 0,
     account: "",
     password: "",
@@ -126,11 +126,11 @@ const insertEvent = () => {
     email: "",
     remark: ""
   };
-  $userOption.userInfoModal.selectRow = null;
-  $userOption.userInfoModal.showModal = true;
+  $pageOption.infoOption.selectRow = null;
+  $pageOption.infoOption.showModal = true;
 };
 const editEvent = (row: any) => {
-  $userOption.formData = {
+  $pageOption.formData = {
     id: row.id,
     name: row.name,
     telephone: row.telephone,
@@ -140,20 +140,20 @@ const editEvent = (row: any) => {
     confirmPassword: row.confirmPassword,
     remark: row.remark
   };
-  $userOption.userInfoModal.selectRow = row;
-  $userOption.userInfoModal.showModal = true;
+  $pageOption.infoOption.selectRow = row;
+  $pageOption.infoOption.showModal = true;
 };
 const submitEvent = () => {
-  $userOption.userInfoModal.submitLoading = true;
-  submitUser($userOption.formData)
+  $pageOption.infoOption.submitLoading = true;
+  submitUser($pageOption.formData)
     .then(() => {
-      $userOption.userInfoModal.submitLoading = false;
-      $userOption.userInfoModal.showModal = false;
+      $pageOption.infoOption.submitLoading = false;
+      $pageOption.infoOption.showModal = false;
       VXETable.modal.message({ content: "保存成功", status: "success" });
       getList();
     })
     .catch(() => {
-      $userOption.userInfoModal.submitLoading = false;
+      $pageOption.infoOption.submitLoading = false;
     });
 };
 const deleteEvent = async (row: any) => {
@@ -172,25 +172,25 @@ const deleteEvent = async (row: any) => {
 };
 const next = () => {
   //动态加载列
-  if ($userOption.importOption.stepActive == 0) {
+  if ($pageOption.importModal.stepActive == 0) {
     //动态加载有问题的数据
-    importUser($userOption.importOption.resFileName)
+    importUser($pageOption.importModal.resFileName)
       .then(() => {
         next();
       })
       .catch((errorData: any) => {
-        $userOption.importOption.errorData = errorData;
-        $userOption.importOption.showNext = false;
+        $pageOption.importModal.errorData = errorData;
+        $pageOption.importModal.showNext = false;
       });
   }
-  $userOption.importOption.stepActive++;
+  $pageOption.importModal.stepActive++;
 };
 
 const importEvent = () => {
-  $userOption.importOption.stepActive = 0;
-  $userOption.importOption.showNext = false;
-  $userOption.importOption.fileList = [];
-  $userOption.importOption.showModal = true;
+  $pageOption.importModal.stepActive = 0;
+  $pageOption.importModal.showNext = false;
+  $pageOption.importModal.fileList = [];
+  $pageOption.importModal.showModal = true;
 };
 const beforeUpload: UploadProps["beforeUpload"] = rawFile => {
   let fileExt = rawFile.name.substring(rawFile.name.lastIndexOf(".") + 1);
@@ -205,16 +205,16 @@ const beforeUpload: UploadProps["beforeUpload"] = rawFile => {
 };
 
 const handleSuccess: UploadProps["onSuccess"] = resFileName => {
-  $userOption.importOption.resFileName = resFileName;
-  $userOption.importOption.showNext = true;
+  $pageOption.importModal.resFileName = resFileName;
+  $pageOption.importModal.showNext = true;
 };
 
 const handleRemove: UploadProps["onRemove"] = () => {
-  $userOption.importOption.showNext = false;
+  $pageOption.importModal.showNext = false;
 };
 
 const exportEvent = () => {
-  exportUserList($userOption.searchData).then(result => {
+  exportUserList($pageOption.searchData).then(result => {
     downloadFile(result);
   });
 };
@@ -223,7 +223,7 @@ const exportEvent = () => {
 <template>
   <div>
     <el-card>
-      <vxe-form :data="$userOption.searchData" @submit="getList">
+      <vxe-form :data="$pageOption.searchData" @submit="getList">
         <vxe-form-item title="姓名" field="name" :item-render="{}">
           <template #default="{ data }">
             <vxe-input v-model="data.name" placeholder="请输入姓名" clearable />
@@ -251,7 +251,6 @@ const exportEvent = () => {
           </template>
         </vxe-form-item>
       </vxe-form>
-      <!-- <el-divider /> -->
       <vxe-toolbar>
         <template #tools>
           <vxe-button
@@ -279,9 +278,9 @@ const exportEvent = () => {
       </vxe-toolbar>
       <vxe-grid
         :height="650"
-        :data="$userOption.pagination.data"
+        :data="$pageOption.pagination.data"
         ref="xGrid"
-        :columns="$userOption.gridColumns"
+        :columns="$pageOption.gridColumns"
       >
         <template #operate="{ row }">
           <vxe-button
@@ -298,7 +297,7 @@ const exportEvent = () => {
             v-auth="userSecurity.delete"
             @click="deleteEvent(row)"
           />
-          <vxe-button icon="fa fa-eye" title="查看" circle />
+          <!-- <vxe-button icon="fa fa-eye" title="查看" circle /> -->
         </template>
         <template #pager>
           <vxe-pager
@@ -312,32 +311,32 @@ const exportEvent = () => {
               'FullJump',
               'Total'
             ]"
-            v-model:current-page="$userOption.searchData.pageIndex"
-            v-model:page-size="$userOption.searchData.pageSize"
-            :total="$userOption.pagination.total"
-            @page-change="handlePageChange"
+            v-model:current-page="$pageOption.searchData.pageIndex"
+            v-model:page-size="$pageOption.searchData.pageSize"
+            :total="$pageOption.pagination.total"
+            @page-change="pageChangeEvent"
           />
         </template>
       </vxe-grid>
     </el-card>
     <vxe-modal
-      v-model="$userOption.userInfoModal.showModal"
+      v-model="$pageOption.infoOption.showModal"
       :title="
-        $userOption.userInfoModal.selectRow
-          ? '编辑数据->' + $userOption.userInfoModal.selectRow.name
+        $pageOption.infoOption.selectRow
+          ? '编辑数据->' + $pageOption.infoOption.selectRow.name
           : '新增数据'
       "
       width="800"
       min-width="600"
       min-height="300"
-      :loading="$userOption.userInfoModal.submitLoading"
+      :loading="$pageOption.infoOption.submitLoading"
       resize
       destroy-on-close
     >
       <template #default>
         <vxe-form
-          :data="$userOption.formData"
-          :rules="$userOption.formRules"
+          :data="$pageOption.formData"
+          :rules="$pageOption.formRules"
           title-align="right"
           title-width="100"
           @submit="submitEvent"
@@ -450,13 +449,13 @@ const exportEvent = () => {
     </vxe-modal>
     <!--导出modal-->
     <vxe-modal
-      v-model="$userOption.importOption.showModal"
+      v-model="$pageOption.importModal.showModal"
       width="800"
       min-height="400"
     >
       <el-card>
         <el-steps
-          :active="$userOption.importOption.stepActive"
+          :active="$pageOption.importModal.stepActive"
           align-center
           finish-status="success"
         >
@@ -464,11 +463,11 @@ const exportEvent = () => {
           <el-step title="导入数据">2</el-step>
         </el-steps>
         <el-divider />
-        <div v-if="$userOption.importOption.stepActive == 0">
+        <div v-if="$pageOption.importModal.stepActive == 0">
           <el-upload
             action=""
             :limit="1"
-            :file-list="$userOption.importOption.fileList"
+            :file-list="$pageOption.importModal.fileList"
             :on-success="handleSuccess"
             :on-remove="handleRemove"
             :before-upload="beforeUpload"
@@ -481,12 +480,12 @@ const exportEvent = () => {
             </template>
           </el-upload>
         </div>
-        <div v-if="$userOption.importOption.stepActive == 1">
+        <div v-if="$pageOption.importModal.stepActive == 1">
           <vxe-table
             size="mini"
             height="300"
             ref="xTable"
-            :data="$userOption.importOption.errorData"
+            :data="$pageOption.importModal.errorData"
           >
             <vxe-column type="seq" width="60" align="center" />
             <vxe-column field="name" title="姓名" />
@@ -495,11 +494,11 @@ const exportEvent = () => {
             <vxe-column field="telephone" title="电话" />
           </vxe-table>
         </div>
-        <div v-if="$userOption.importOption.stepActive == 2">
+        <div v-if="$pageOption.importModal.stepActive == 2">
           <el-result icon="success" title="导入成功">
             <template #extra>
               <el-button
-                @click="$userOption.importOption.showModal = false"
+                @click="$pageOption.importModal.showModal = false"
                 type="primary"
                 >返回</el-button
               >
@@ -510,16 +509,16 @@ const exportEvent = () => {
       <el-button
         style="margin-top: 12px"
         type="primary"
-        :disabled="!$userOption.importOption.showNext"
-        v-if="$userOption.importOption.stepActive == 0"
+        :disabled="!$pageOption.importModal.showNext"
+        v-if="$pageOption.importModal.stepActive == 0"
         @click="next"
         >下一步</el-button
       >
       <el-button
         style="margin-top: 12px"
         type="primary"
-        v-if="$userOption.importOption.stepActive == 1"
-        @click="$userOption.importOption.stepActive--"
+        v-if="$pageOption.importModal.stepActive == 1"
+        @click="$pageOption.importModal.stepActive--"
         >上一步</el-button
       >
     </vxe-modal>
