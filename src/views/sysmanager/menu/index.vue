@@ -26,8 +26,7 @@ const $pageOption = reactive({
 
 const getList = () => {
   getMenus($pageOption.searchData).then((result: any) => {
-    const { items } = result;
-    const { totalCount } = result;
+    const { items, totalCount } = result;
     $pageOption.pagination.data = items;
     $pageOption.pagination.total = totalCount;
   });

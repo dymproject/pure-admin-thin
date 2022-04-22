@@ -136,8 +136,7 @@ const $pageOption = reactive({
 
 const getList = () => {
   getRoles($pageOption.searchData).then((result: any) => {
-    const { items } = result;
-    const { totalCount } = result;
+    const { items, totalCount } = result;
     $pageOption.pagination.data = items;
     $pageOption.pagination.total = totalCount;
   });
@@ -216,8 +215,7 @@ const queryUser = () => {
     $pageOption.tabsOption.userSearchData
   )
     .then((result: any) => {
-      const { items } = result;
-      const { totalCount } = result;
+      const { items, totalCount } = result;
       $pageOption.tabsOption.pagination.data = items;
       $pageOption.tabsOption.pagination.total = totalCount;
     })
@@ -403,16 +401,6 @@ const saveRoleMenu = () => {
         </template>
         <template #pager>
           <vxe-pager
-            :layouts="[
-              'Sizes',
-              'PrevJump',
-              'PrevPage',
-              'Number',
-              'NextPage',
-              'NextJump',
-              'FullJump',
-              'Total'
-            ]"
             v-model:current-page="$pageOption.searchData.pageIndex"
             v-model:page-size="$pageOption.searchData.pageSize"
             :total="$pageOption.pagination.total"

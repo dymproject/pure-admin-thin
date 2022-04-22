@@ -59,6 +59,27 @@ VXETable.setup({
     // 鼠标移到行是否要高亮显示
     highlightHoverRow: true
   },
+  pager: {
+    autoHidden: false,
+    perfect: true,
+    layouts: [
+      "Sizes",
+      "PrevJump",
+      "PrevPage",
+      "Number",
+      "NextPage",
+      "NextJump",
+      "FullJump",
+      "Total"
+    ]
+  },
+  icon: {
+    // pager
+    PAGER_JUMP_PREV: "fa fa-angle-double-left",
+    PAGER_JUMP_NEXT: "fa fa-angle-double-right",
+    PAGER_PREV_PAGE: "fa fa-angle-left",
+    PAGER_NEXT_PAGE: "fa fa-angle-right"
+  },
   input: {
     clearable: true
   }

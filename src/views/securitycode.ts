@@ -16,3 +16,9 @@ export const roleSecurity = {
   bindSecurity: "role.service.bind.security",
   unbindSecurity: "role.service.unbind.security"
 };
+
+export const sysdataSecurity = {
+  add: "sysdata.service.add",
+  edit: "sysdata.service.modify",
+  delete: "sysdata.service.delete"
+};
