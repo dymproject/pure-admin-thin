@@ -85,16 +85,6 @@ const pageChangeEvent: VxePagerEvents.PageChange = ({
       >
         <template #pager>
           <vxe-pager
-            :layouts="[
-              'Sizes',
-              'PrevJump',
-              'PrevPage',
-              'Number',
-              'NextPage',
-              'NextJump',
-              'FullJump',
-              'Total'
-            ]"
             v-model:current-page="$pageOption.searchData.pageIndex"
             v-model:page-size="$pageOption.searchData.pageSize"
             :total="$pageOption.pagination.total"

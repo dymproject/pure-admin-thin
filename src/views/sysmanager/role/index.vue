@@ -498,10 +498,6 @@ const saveRoleMenu = () => {
             </vxe-form-item>
             <vxe-form-item :item-render="{}">
               <template #default="{}">
-                <!-- <vxe-input
-                  v-model="$pageOption.tabsOption.searchData.binded"
-                  placeholder="请输入账号"
-                /> -->
                 <vxe-checkbox
                   v-model="$pageOption.tabsOption.userSearchData.isBind"
                   @change="queryUser"
