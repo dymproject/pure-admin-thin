@@ -22,3 +22,15 @@ export const sysdataSecurity = {
   edit: "sysdata.service.modify",
   delete: "sysdata.service.delete"
 };
+
+export const sysConfigSecurity = {
+  add: "sysconfig.service.add",
+  edit: "sysconfig.service.modify",
+  delete: "sysconfig.service.delete"
+};
+
+export const organizationSecurity = {
+  add: "organization.service.add",
+  edit: "organization.service.modify",
+  delete: "organization.service.delete"
+};

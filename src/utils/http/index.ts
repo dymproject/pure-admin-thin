@@ -84,6 +84,7 @@ service.interceptors.response.use(
             .catch(() => {
               return Promise.reject(extras);
             });
+          return Promise.reject(extras);
         } else {
           ElMessage.error(JSON.stringify(message));
           return Promise.reject(extras);

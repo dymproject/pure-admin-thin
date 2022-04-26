@@ -9,19 +9,11 @@ export const getCategories = (params: any) => {
 };
 
 export const submitCategory = (params: any) => {
-  if (params.id) {
-    return request({
-      url: "sysdata",
-      method: "put",
-      data: params
-    });
-  } else {
-    return request({
-      url: "sysdata",
-      method: "post",
-      data: params
-    });
-  }
+  return request({
+    url: "sysdata",
+    method: params.id ? "put" : "post",
+    data: params
+  });
 };
 
 export const deleteCategory = (categoryId: number) => {

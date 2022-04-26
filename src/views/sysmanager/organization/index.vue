@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import {
-  VxePagerEvents,
   VxeColumnProps,
+  VxeFormPropTypes,
   VXETable,
-  VxeFormPropTypes
+  VxeTableInstance
 } from "vxe-table";
-import { sysConfigSecurity } from "/@/views/securitycode";
-import { getConfigList, submitConfig, deleteConfig } from "/@/api/sysconfig";
-
+import { getOrgList, submitOrg, deleteOrg } from "/@/api/organization";
+import { organizationSecurity } from "../../securitycode";
+const xGrid = ref({} as VxeTableInstance);
+defineExpose({
+  xGrid
+});
 const $pageOption = reactive({
   searchData: {
     name: "",
@@ -26,32 +29,32 @@ const $pageOption = reactive({
   },
   formData: {
     id: 0,
+    pid: null,
     name: "",
-    key: "",
-    value: "",
+    telephone: "",
+    leader: "",
+    rank: 0,
     remark: ""
   },
   formRules: {
-    name: [
-      { required: true, message: "请输入配置名称" },
-      { min: 2, max: 32, message: "长度在 2 到 32 个字符" }
-    ],
-    key: [
-      { required: true, message: "key不能为空" },
-      { min: 2, max: 32, message: "长度在 2 到 32 个字符" }
-    ],
-    value: [{ required: true, message: "值不能为空" }]
+    name: [{ required: true, message: "请输入组织机构名称" }],
+    telephone: [
+      {
+        pattern: "^1([3456789][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$",
+        message: "请输入正确的电话号码"
+      }
+    ]
   } as VxeFormPropTypes.Rules,
   gridColumns: [
-    { type: "seq", title: "序号", width: 50, align: "center" },
-    { field: "name", title: "姓名" },
-    { field: "key", title: "配置Key" },
-    { field: "value", title: "配置Value" },
-    { field: "remark", title: "备注" },
+    { type: "seq", title: "序号", width: 100, align: "center" },
+    { field: "name", title: "组织机构名称", treeNode: "true" },
+    { field: "leader", title: "负责人" },
+    { field: "telephone", title: "电话" },
+    { field: "remark", title: "备注", showOverflow: true },
     {
       field: "operate",
       align: "center",
-      width: 150,
+      width: 250,
       title: "操作",
       slots: { default: "operate" }
     }
@@ -59,38 +62,39 @@ const $pageOption = reactive({
 });
 
 const getList = () => {
-  getConfigList($pageOption.searchData).then((result: any) => {
-    const { items, totalCount } = result;
-    $pageOption.pagination.data = items;
-    $pageOption.pagination.total = totalCount;
+  getOrgList($pageOption.searchData).then((result: any) => {
+    $pageOption.pagination.data = result;
+    setTimeout(() => {
+      xGrid.value.setAllTreeExpand(true);
+    }, 500);
   });
 };
 getList();
-const pageChangeEvent: VxePagerEvents.PageChange = ({
-  currentPage,
-  pageSize
-}) => {
-  $pageOption.searchData.pageIndex = currentPage;
-  $pageOption.searchData.pageSize = pageSize;
-  getList();
-};
-const insertEvent = () => {
+
+const insertEvent = (row: any) => {
   $pageOption.formData = {
     id: 0,
+    pid: null,
     name: "",
-    key: "",
-    value: "",
+    telephone: "",
+    leader: "",
+    rank: 0,
     remark: ""
   };
+  if (row) {
+    $pageOption.formData.pid = row.id;
+  }
   $pageOption.infoOption.selectRow = null;
   $pageOption.infoOption.showModal = true;
 };
 const editEvent = (row: any) => {
   $pageOption.formData = {
     id: row.id,
+    pid: row.pid,
     name: row.name,
-    key: row.key,
-    value: row.value,
+    telephone: row.telephone,
+    leader: row.leader,
+    rank: row.rank,
     remark: row.remark
   };
   $pageOption.infoOption.selectRow = row;
@@ -98,7 +102,7 @@ const editEvent = (row: any) => {
 };
 const submitEvent = () => {
   $pageOption.infoOption.submitLoading = true;
-  submitConfig($pageOption.formData)
+  submitOrg($pageOption.formData)
     .then(() => {
       $pageOption.infoOption.submitLoading = false;
       $pageOption.infoOption.showModal = false;
@@ -110,10 +114,9 @@ const submitEvent = () => {
     });
 };
 const deleteEvent = async (row: any) => {
-  console.log(row);
   const type = await VXETable.modal.confirm("您确定要删除吗？");
   if (type == "confirm") {
-    deleteConfig(row.id).then(() => {
+    deleteOrg(row.id).then(() => {
       VXETable.modal.message({ content: "删除成功", status: "success" });
       getList();
     });
@@ -125,11 +128,11 @@ const deleteEvent = async (row: any) => {
   <div>
     <el-card>
       <vxe-form :data="$pageOption.searchData" @submit="getList">
-        <vxe-form-item title="配置名称" field="name" :item-render="{}">
+        <vxe-form-item title="组织机构名称" field="name" :item-render="{}">
           <template #default="{ data }">
             <vxe-input
               v-model="data.name"
-              placeholder="请输入配置名称"
+              placeholder="请输入组织机构名称"
               clearable
             />
           </template>
@@ -151,21 +154,15 @@ const deleteEvent = async (row: any) => {
           </template>
         </vxe-form-item>
       </vxe-form>
-      <vxe-toolbar>
-        <template #tools>
-          <vxe-button
-            icon="fa fa-plus"
-            status="success"
-            content="新增"
-            v-auth="sysConfigSecurity.add"
-            @click="insertEvent"
-          />
-        </template>
-      </vxe-toolbar>
       <vxe-grid
-        :height="650"
-        :data="$pageOption.pagination.data"
         ref="xGrid"
+        :height="650"
+        :tree-config="{
+          transform: true,
+          rowField: 'id',
+          parentField: 'pid'
+        }"
+        :data="$pageOption.pagination.data"
         :columns="$pageOption.gridColumns"
       >
         <template #operate="{ row }">
@@ -173,24 +170,22 @@ const deleteEvent = async (row: any) => {
             icon="fa fa-edit"
             title="修改"
             circle
-            v-auth="sysConfigSecurity.edit"
+            v-auth="organizationSecurity.edit"
             @click="editEvent(row)"
           />
           <vxe-button
             icon="fa fa-trash"
             title="删除"
             circle
-            v-auth="sysConfigSecurity.delete"
+            v-auth="organizationSecurity.delete"
             @click="deleteEvent(row)"
           />
-          <!-- <vxe-button icon="fa fa-eye" title="查看" circle /> -->
-        </template>
-        <template #pager>
-          <vxe-pager
-            v-model:current-page="$pageOption.searchData.pageIndex"
-            v-model:page-size="$pageOption.searchData.pageSize"
-            :total="$pageOption.pagination.total"
-            @page-change="pageChangeEvent"
+          <vxe-button
+            icon="fa fa-plus"
+            title="增加分类数据"
+            circle
+            v-auth="organizationSecurity.add"
+            @click="insertEvent(row)"
           />
         </template>
       </vxe-grid>
@@ -218,50 +213,42 @@ const deleteEvent = async (row: any) => {
           @submit="submitEvent"
         >
           <vxe-form-item
-            title="基本信息"
-            title-align="left"
-            :title-width="200"
-            :span="24"
-            :title-prefix="{ icon: 'fa fa-address-card-o' }"
-          />
-          <vxe-form-item
             field="name"
-            title="配置名称"
+            title="组织机构名称"
             :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
-              <vxe-input v-model="data.name" placeholder="配置名称" />
+              <vxe-input v-model="data.name" placeholder="组织机构名称" />
             </template>
           </vxe-form-item>
           <vxe-form-item
-            title="配置信息"
-            title-align="left"
-            :title-width="200"
-            :span="24"
-            :title-prefix="{
-              message: '配置键值',
-              icon: 'fa fa-info-circle'
-            }"
-          />
-          <vxe-form-item
-            field="key"
-            title="配置项key"
-            :span="24"
+            field="telephone"
+            title="电话"
+            :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
-              <vxe-input v-model="data.key" placeholder="请输入Key" />
+              <vxe-input v-model="data.telephone" placeholder="请输入电话" />
             </template>
           </vxe-form-item>
           <vxe-form-item
-            field="value"
-            title="配置项值"
-            :span="24"
+            field="leader"
+            title="负责人"
+            :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
-              <vxe-input v-model="data.value" placeholder="请输入Value" />
+              <vxe-input v-model="data.leader" placeholder="请输入负责人" />
+            </template>
+          </vxe-form-item>
+          <vxe-form-item field="rank" title="排序" :span="12" :item-render="{}">
+            <template #default="{ data }">
+              <vxe-input
+                type="integer"
+                v-model="data.rank"
+                placeholder="排序"
+              />
             </template>
           </vxe-form-item>
           <vxe-form-item
@@ -269,10 +256,6 @@ const deleteEvent = async (row: any) => {
             title="备注信息"
             :span="24"
             :item-render="{}"
-            :title-suffix="{
-              message: '备注信息！！',
-              icon: 'fa fa-question-circle'
-            }"
           >
             <template #default="{ data }">
               <vxe-textarea

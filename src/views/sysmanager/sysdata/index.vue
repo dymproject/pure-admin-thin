@@ -149,27 +149,19 @@ const submitEvent = () => {
 const deleteEvent = async (row: any) => {
   const type = await VXETable.modal.confirm("您确定要删除吗？");
   if (type == "confirm") {
-    deleteCategory(row.id)
-      .then(() => {
-        VXETable.modal.message({ content: "删除成功", status: "success" });
-        getList();
-      })
-      .catch(() => {
-        VXETable.modal.message({ content: "删除失败", status: "error" });
-      });
+    deleteCategory(row.id).then(() => {
+      VXETable.modal.message({ content: "删除成功", status: "success" });
+      getList();
+    });
   }
 };
 const deleteCateDataEvent = async (row: any) => {
   const type = await VXETable.modal.confirm("您确定要删除吗？");
   if (type == "confirm") {
-    deleteCategoryData(row.id)
-      .then(() => {
-        VXETable.modal.message({ content: "删除成功", status: "success" });
-        getList();
-      })
-      .catch(() => {
-        VXETable.modal.message({ content: "删除失败", status: "error" });
-      });
+    deleteCategoryData(row.id).then(() => {
+      VXETable.modal.message({ content: "删除成功", status: "success" });
+      getList();
+    });
   }
 };
 const submitCateDataEvent = () => {
@@ -307,6 +299,7 @@ const tableExpand = ref({
             icon="fa fa-plus"
             title="增加分类数据"
             circle
+            v-auth="sysdataSecurity.add"
             @click="addCategoryDataEvent(row)"
           />
         </template>

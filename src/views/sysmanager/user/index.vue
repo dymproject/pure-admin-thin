@@ -7,8 +7,10 @@ import {
   VxeFormPropTypes
 } from "vxe-table";
 import { UploadProps, ElMessage } from "element-plus";
+import ots from "/@/components/Organization/OrganizationTreeSelect.vue";
 import { userSecurity } from "/@/views/securitycode";
 import { fileUpload } from "/@/api/fileupload";
+import { getOrgTree } from "/@/api/organization";
 import {
   getUserList,
   submitUser,
@@ -22,6 +24,7 @@ const $pageOption = reactive({
   searchData: {
     name: "",
     telephone: "",
+    orgId: "",
     pageSize: 20,
     pageIndex: 1
   },
@@ -36,6 +39,7 @@ const $pageOption = reactive({
   },
   formData: {
     id: 0,
+    orgId: "",
     account: "",
     password: "",
     confirmPassword: "",
@@ -58,6 +62,7 @@ const $pageOption = reactive({
       { min: 5, max: 32, message: "长度在 5 到 32 个字符" }
     ],
     name: [{ required: true, message: "请输入姓名" }],
+    orgId: [{ required: true, message: "请选择组织机构" }],
     email: [
       { required: true, message: "请输入邮箱" },
       {
@@ -79,7 +84,9 @@ const $pageOption = reactive({
     { field: "telephone", title: "电话" },
     { field: "email", title: "邮箱" },
     { field: "account", title: "账号" },
+    { field: "orgName", title: "组织机构" },
     { field: "signinedTime", title: "登陆时间" },
+    { field: "remark", title: "备注" },
     {
       field: "operate",
       align: "center",
@@ -95,7 +102,8 @@ const $pageOption = reactive({
     fileList: [],
     resFileName: "",
     errorData: []
-  }
+  },
+  treeData: []
 });
 
 const getList = () => {
@@ -105,6 +113,12 @@ const getList = () => {
     $pageOption.pagination.total = totalCount;
   });
 };
+const initOrgTree = () => {
+  getOrgTree().then((data: any) => {
+    $pageOption.treeData = data;
+  });
+};
+initOrgTree();
 getList();
 const pageChangeEvent: VxePagerEvents.PageChange = ({
   currentPage,
@@ -117,6 +131,7 @@ const pageChangeEvent: VxePagerEvents.PageChange = ({
 const insertEvent = () => {
   $pageOption.formData = {
     id: 0,
+    orgId: "",
     account: "",
     password: "",
     confirmPassword: "",
@@ -131,6 +146,7 @@ const insertEvent = () => {
 const editEvent = (row: any) => {
   $pageOption.formData = {
     id: row.id,
+    orgId: row.orgId.toString(),
     name: row.name,
     telephone: row.telephone,
     email: row.email,
@@ -159,14 +175,10 @@ const deleteEvent = async (row: any) => {
   const type = await VXETable.modal.confirm("您确定要删除吗？");
   if (type == "confirm") {
     let param = { userids: row.id };
-    deleteUser(param)
-      .then(() => {
-        VXETable.modal.message({ content: "删除成功", status: "success" });
-        getList();
-      })
-      .catch(() => {
-        VXETable.modal.message({ content: "删除失败", status: "error" });
-      });
+    deleteUser(param).then(() => {
+      VXETable.modal.message({ content: "删除成功", status: "success" });
+      getList();
+    });
   }
 };
 const next = () => {
@@ -217,97 +229,129 @@ const exportEvent = () => {
     downloadFile(result);
   });
 };
+interface Tree {
+  value: string;
+  label: string;
+  children?: Tree[];
+}
+const handleNodeClick = (data: Tree) => {
+  $pageOption.searchData.orgId = data.value;
+  getList();
+};
 </script>
 
 <template>
   <div>
-    <el-card>
-      <vxe-form :data="$pageOption.searchData" @submit="getList">
-        <vxe-form-item title="姓名" field="name" :item-render="{}">
-          <template #default="{ data }">
-            <vxe-input v-model="data.name" placeholder="请输入姓名" clearable />
-          </template>
-        </vxe-form-item>
-        <vxe-form-item title="电话" field="telephone" :item-render="{}">
-          <template #default="{ data }">
-            <vxe-input v-model="data.telephone" placeholder="请输入电话" />
-          </template>
-        </vxe-form-item>
-        <vxe-form-item>
-          <template #default>
-            <vxe-button
-              type="submit"
-              icon="fa fa-search"
-              status="primary"
-              content="查询"
-            />
-            <vxe-button
-              icon="fa fa-undo"
-              type="reset"
-              status="info"
-              content="重置"
-            />
-          </template>
-        </vxe-form-item>
-      </vxe-form>
-      <vxe-toolbar>
-        <template #tools>
-          <vxe-button
-            icon="fa fa-plus"
-            status="success"
-            content="新增"
-            v-auth="userSecurity.add"
-            @click="insertEvent"
-          />
-          <vxe-button
-            icon="fa fa-upload"
-            status="warning"
-            content="导入"
-            v-auth="userSecurity.import"
-            @click="importEvent"
-          />
-          <vxe-button
-            icon="fa fa-download"
-            status="danger"
-            content="导出"
-            v-auth="userSecurity.export"
-            @click="exportEvent"
-          />
-        </template>
-      </vxe-toolbar>
-      <vxe-grid
-        :height="650"
-        :data="$pageOption.pagination.data"
-        ref="xGrid"
-        :columns="$pageOption.gridColumns"
-      >
-        <template #operate="{ row }">
-          <vxe-button
-            icon="fa fa-edit"
-            title="修改"
-            circle
-            v-auth="userSecurity.edit"
-            @click="editEvent(row)"
-          />
-          <vxe-button
-            icon="fa fa-trash"
-            title="删除"
-            circle
-            v-auth="userSecurity.delete"
-            @click="deleteEvent(row)"
-          />
-          <!-- <vxe-button icon="fa fa-eye" title="查看" circle /> -->
-        </template>
-        <template #pager>
-          <vxe-pager
-            v-model:current-page="$pageOption.searchData.pageIndex"
-            v-model:page-size="$pageOption.searchData.pageSize"
-            :total="$pageOption.pagination.total"
-            @page-change="pageChangeEvent"
-          />
-        </template>
-      </vxe-grid>
-    </el-card>
+    <el-container style="position: relative">
+      <el-aside width="300px">
+        <el-tree
+          class="org-tree"
+          :highlight-current="true"
+          :default-expand-all="true"
+          :expand-on-click-node="false"
+          :data="$pageOption.treeData"
+          @node-click="handleNodeClick"
+        />
+      </el-aside>
+      <el-container>
+        <el-main style="padding: 0px 0px 0px 10px">
+          <el-card>
+            <vxe-form :data="$pageOption.searchData" @submit="getList">
+              <vxe-form-item title="姓名" field="name" :item-render="{}">
+                <template #default="{ data }">
+                  <vxe-input
+                    v-model="data.name"
+                    placeholder="请输入姓名"
+                    clearable
+                  />
+                </template>
+              </vxe-form-item>
+              <vxe-form-item title="电话" field="telephone" :item-render="{}">
+                <template #default="{ data }">
+                  <vxe-input
+                    v-model="data.telephone"
+                    placeholder="请输入电话"
+                  />
+                </template>
+              </vxe-form-item>
+              <vxe-form-item>
+                <template #default>
+                  <vxe-button
+                    type="submit"
+                    icon="fa fa-search"
+                    status="primary"
+                    content="查询"
+                  />
+                  <vxe-button
+                    icon="fa fa-undo"
+                    type="reset"
+                    status="info"
+                    content="重置"
+                  />
+                </template>
+              </vxe-form-item>
+            </vxe-form>
+            <vxe-toolbar>
+              <template #tools>
+                <vxe-button
+                  icon="fa fa-plus"
+                  status="success"
+                  content="新增"
+                  v-auth="userSecurity.add"
+                  @click="insertEvent"
+                />
+                <vxe-button
+                  icon="fa fa-upload"
+                  status="warning"
+                  content="导入"
+                  v-auth="userSecurity.import"
+                  @click="importEvent"
+                />
+                <vxe-button
+                  icon="fa fa-download"
+                  status="danger"
+                  content="导出"
+                  v-auth="userSecurity.export"
+                  @click="exportEvent"
+                />
+              </template>
+            </vxe-toolbar>
+            <vxe-grid
+              :height="650"
+              :data="$pageOption.pagination.data"
+              ref="xGrid"
+              :columns="$pageOption.gridColumns"
+            >
+              <template #operate="{ row }">
+                <vxe-button
+                  icon="fa fa-edit"
+                  title="修改"
+                  circle
+                  v-auth="userSecurity.edit"
+                  @click="editEvent(row)"
+                />
+                <vxe-button
+                  icon="fa fa-trash"
+                  title="删除"
+                  circle
+                  v-auth="userSecurity.delete"
+                  @click="deleteEvent(row)"
+                />
+                <!-- <vxe-button icon="fa fa-eye" title="查看" circle /> -->
+              </template>
+              <template #pager>
+                <vxe-pager
+                  v-model:current-page="$pageOption.searchData.pageIndex"
+                  v-model:page-size="$pageOption.searchData.pageSize"
+                  :total="$pageOption.pagination.total"
+                  @page-change="pageChangeEvent"
+                />
+              </template>
+            </vxe-grid>
+          </el-card>
+        </el-main>
+      </el-container>
+    </el-container>
     <vxe-modal
       v-model="$pageOption.infoOption.showModal"
       :title="
@@ -363,6 +407,16 @@ const exportEvent = () => {
             </template>
           </vxe-form-item>
           <vxe-form-item
+            field="orgId"
+            title="组织机构"
+            :span="12"
+            :item-render="{}"
+          >
+            <template #default="{ data }">
+              <ots v-model="data.orgId" />
+            </template>
+          </vxe-form-item>
+          <vxe-form-item
             title="账号信息"
             title-align="left"
             :title-width="200"
@@ -379,7 +433,11 @@ const exportEvent = () => {
             :item-render="{}"
           >
             <template #default="{ data }">
-              <vxe-input v-model="data.account" placeholder="请输入用户名" />
+              <vxe-input
+                :disabled="$pageOption.infoOption.selectRow != null"
+                v-model="data.account"
+                placeholder="请输入用户名"
+              />
             </template>
           </vxe-form-item>
           <vxe-form-item
@@ -436,7 +494,6 @@ const exportEvent = () => {
         </vxe-form>
       </template>
     </vxe-modal>
-    <!--导出modal-->
     <vxe-modal
       v-model="$pageOption.importModal.showModal"
       width="800"
@@ -514,4 +571,10 @@ const exportEvent = () => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.org-tree {
+  padding: 20px;
+  height: 100%;
+  border-radius: 5px;
+}
+</style>
