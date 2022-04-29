@@ -126,7 +126,13 @@ const $pageOption = reactive({
       { type: "checkbox", width: 100, align: "center", treeNode: "true" },
       { field: "title", title: "菜单名" },
       { field: "name", title: "菜单唯一Name" },
-      { field: "icon", title: "图标" },
+      {
+        field: "icon",
+        title: "图标",
+        slots: {
+          default: "icon_default"
+        }
+      },
       { field: "path", title: "路径", showOverflow: true },
       { field: "redirect", title: "重定向", showOverflow: true },
       { field: "query", title: "参数", showOverflow: true }
@@ -663,7 +669,11 @@ const saveRoleMenu = () => {
             }"
             :data="$pageOption.tabsOption.menuData"
             :columns="$pageOption.tabsOption.menuGridColumns"
-          />
+          >
+            <template #icon_default="{ row }">
+              <IconifyIconOffline :icon="row.icon" />
+            </template>
+          </vxe-grid>
         </el-tab-pane>
       </el-tabs>
     </vxe-modal>

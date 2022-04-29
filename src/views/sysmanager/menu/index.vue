@@ -2,6 +2,7 @@
 import { reactive } from "vue";
 import { VxePagerEvents, VxeColumnProps } from "vxe-table";
 import { getMenus } from "/@/api/menu";
+import { IconifyIconOffline } from "/@/components/ReIcon";
 
 const $pageOption = reactive({
   searchData: {
@@ -17,7 +18,14 @@ const $pageOption = reactive({
     { type: "seq", title: "序号", width: 50, align: "center" },
     { field: "title", title: "菜单名", treeNode: "true" },
     { field: "name", title: "菜单唯一Name" },
-    { field: "icon", title: "图标" },
+    {
+      field: "icon",
+      title: "图标",
+      slots: {
+        default: "icon_default"
+      },
+      width: 100
+    },
     { field: "path", title: "路径" },
     { field: "redirect", title: "重定向" },
     { field: "query", title: "参数" }
@@ -83,6 +91,9 @@ const pageChangeEvent: VxePagerEvents.PageChange = ({
         :data="$pageOption.pagination.data"
         :columns="$pageOption.gridColumns"
       >
+        <template #icon_default="{ row }">
+          <IconifyIconOffline :icon="row.icon" />
+        </template>
         <template #pager>
           <vxe-pager
             v-model:current-page="$pageOption.searchData.pageIndex"

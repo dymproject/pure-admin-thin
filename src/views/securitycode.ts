@@ -34,3 +34,9 @@ export const organizationSecurity = {
   edit: "organization.service.modify",
   delete: "organization.service.delete"
 };
+
+export const tenantSecurity = {
+  add: "tenant.service.add",
+  edit: "tenant.service.modify",
+  delete: "tenant.service.delete"
+};

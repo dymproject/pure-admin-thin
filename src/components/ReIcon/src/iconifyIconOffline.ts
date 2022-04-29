@@ -2,6 +2,7 @@ import { h, defineComponent } from "vue";
 import { Icon as IconifyIcon, addIcon } from "@iconify/vue/dist/offline";
 
 // element-plus icon
+import Document from "@iconify-icons/ep/document";
 import Check from "@iconify-icons/ep/check";
 import Menu from "@iconify-icons/ep/menu";
 import HomeFilled from "@iconify-icons/ep/home-filled";
@@ -28,6 +29,7 @@ import Rank from "@iconify-icons/ep/rank";
 import videoPlay from "@iconify-icons/ep/video-play";
 import Monitor from "@iconify-icons/ep/monitor";
 import Search from "@iconify-icons/ep/search";
+addIcon("document", Document);
 addIcon("check", Check);
 addIcon("menu", Menu);
 addIcon("home-filled", HomeFilled);
