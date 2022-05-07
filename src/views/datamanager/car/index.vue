@@ -14,7 +14,7 @@ import {
   UploadInstance
 } from "element-plus";
 import ots from "/@/components/Organization/OrganizationTreeSelect.vue";
-import dictonary from "/@/components/dictonary/DictonaryDataSelect.vue";
+import dictonary from "/@/components/Dictonary/DictonaryDataSelect.vue";
 import { carSecurity } from "/@/views/securitycode";
 import { fileUpload } from "/@/api/fileupload";
 import { getOrgTree } from "/@/api/organization";
@@ -303,7 +303,7 @@ const handleNodeClick = (data: Tree) => {
                 <template #default="{ data }">
                   <vxe-input
                     v-model="data.alias"
-                    placeholder="识别码"
+                    placeholder="内部编号"
                     clearable
                   />
                 </template>
