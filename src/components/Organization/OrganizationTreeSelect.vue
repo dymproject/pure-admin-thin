@@ -20,7 +20,7 @@ initOrg();
     v-model="treeOption.value"
     size="default"
     style="width: 100%"
-    check-strictly="true"
+    :check-strictly="true"
     :data="treeOption.data"
   />
 </template>

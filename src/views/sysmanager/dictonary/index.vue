@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { reactive } from "vue";
+import { VxePagerEvents, VxeColumnProps, VXETable } from "vxe-table";
 import {
-  VxeColumnProps,
-  VxeFormPropTypes,
-  VXETable,
-  VxeTableInstance
-} from "vxe-table";
-import { getOrgList, submitOrg, deleteOrg } from "/@/api/organization";
-import { organizationSecurity } from "../../securitycode";
-const xGrid = ref({} as VxeTableInstance);
-defineExpose({
-  xGrid
-});
+  submitDictonaryData,
+  getDictonaryDataList,
+  deleteDictonaryData
+} from "/@/api/dictonary";
+import { sysdataSecurity } from "/@/views/securitycode";
+
 const $pageOption = reactive({
   searchData: {
     name: "",
@@ -22,35 +18,11 @@ const $pageOption = reactive({
     total: 0,
     data: []
   },
-  infoOption: {
-    showModal: false,
-    submitLoading: false,
-    selectRow: null
-  },
-  formData: {
-    id: 0,
-    parentId: null,
-    name: "",
-    telephone: "",
-    leader: "",
-    rank: 0,
-    remark: ""
-  },
-  formRules: {
-    name: [{ required: true, message: "请输入组织机构名称" }],
-    telephone: [
-      {
-        pattern: "^1([3456789][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$",
-        message: "请输入正确的电话号码"
-      }
-    ]
-  } as VxeFormPropTypes.Rules,
   gridColumns: [
-    { type: "seq", title: "序号", width: 100, align: "center" },
-    { field: "name", title: "组织机构名称", treeNode: "true" },
-    { field: "leader", title: "负责人" },
-    { field: "telephone", title: "电话" },
-    { field: "remark", title: "备注", showOverflow: true },
+    // { type: "seq", title: "序号", width: 50, align: "center" },
+    { field: "id", title: "字典编号" },
+    { field: "name", title: "字典名称", treeNode: "true" },
+    { field: "rank", title: "排序" },
     {
       field: "operate",
       align: "center",
@@ -58,48 +30,67 @@ const $pageOption = reactive({
       title: "操作",
       slots: { default: "operate" }
     }
-  ] as VxeColumnProps[]
+  ] as VxeColumnProps[],
+  formData: {
+    id: null,
+    name: "",
+    rank: 0,
+    parentId: null
+  },
+  infoOption: {
+    showModal: false,
+    showCateDataModal: false,
+    submitLoading: false,
+    selectRow: null,
+    categoryId: null
+  },
+  fromRule: {
+    name: [{ required: true, message: "字典名称不能为空" }],
+    rank: [{ required: true, message: "字典排序不能为空" }]
+  }
 });
 
 const getList = () => {
-  getOrgList($pageOption.searchData).then((result: any) => {
-    $pageOption.pagination.data = result;
+  getDictonaryDataList($pageOption.searchData).then((result: any) => {
+    const { items, totalCount } = result;
+    $pageOption.pagination.data = items;
+    $pageOption.pagination.total = totalCount;
   });
 };
 getList();
+const pageChangeEvent: VxePagerEvents.PageChange = ({
+  currentPage,
+  pageSize
+}) => {
+  $pageOption.searchData.pageIndex = currentPage;
+  $pageOption.searchData.pageSize = pageSize;
+  getList();
+};
 
 const insertEvent = (row: any) => {
   $pageOption.formData = {
-    id: 0,
-    parentId: null,
+    id: null,
     name: "",
-    telephone: "",
-    leader: "",
     rank: 0,
-    remark: ""
+    parentId: row.id
   };
-  if (row) {
-    $pageOption.formData.parentId = row.id;
-  }
   $pageOption.infoOption.selectRow = null;
   $pageOption.infoOption.showModal = true;
 };
 const editEvent = (row: any) => {
   $pageOption.formData = {
     id: row.id,
-    parentId: row.parentId,
     name: row.name,
-    telephone: row.telephone,
-    leader: row.leader,
-    rank: row.rank,
-    remark: row.remark
+    parentId: row.parentId,
+    rank: row.rank
   };
   $pageOption.infoOption.selectRow = row;
   $pageOption.infoOption.showModal = true;
 };
+
 const submitEvent = () => {
   $pageOption.infoOption.submitLoading = true;
-  submitOrg($pageOption.formData)
+  submitDictonaryData($pageOption.formData)
     .then(() => {
       $pageOption.infoOption.submitLoading = false;
       $pageOption.infoOption.showModal = false;
@@ -113,7 +104,7 @@ const submitEvent = () => {
 const deleteEvent = async (row: any) => {
   const type = await VXETable.modal.confirm("您确定要删除吗？");
   if (type == "confirm") {
-    deleteOrg(row.id).then(() => {
+    deleteDictonaryData(row.id).then(() => {
       VXETable.modal.message({ content: "删除成功", status: "success" });
       getList();
     });
@@ -125,11 +116,11 @@ const deleteEvent = async (row: any) => {
   <div>
     <el-card>
       <vxe-form :data="$pageOption.searchData" @submit="getList">
-        <vxe-form-item title="组织机构名称" field="name" :item-render="{}">
+        <vxe-form-item title="字典名称" field="name" :item-render="{}">
           <template #default="{ data }">
             <vxe-input
               v-model="data.name"
-              placeholder="请输入组织机构名称"
+              placeholder="请输入字典名称"
               clearable
             />
           </template>
@@ -155,7 +146,6 @@ const deleteEvent = async (row: any) => {
         ref="xGrid"
         :height="650"
         :tree-config="{
-          expandAll: true,
           transform: true,
           rowField: 'id',
           parentField: 'parentId'
@@ -168,22 +158,32 @@ const deleteEvent = async (row: any) => {
             icon="fa fa-edit"
             title="修改"
             circle
-            v-auth="organizationSecurity.edit"
+            v-auth="sysdataSecurity.edit"
             @click="editEvent(row)"
           />
           <vxe-button
             icon="fa fa-trash"
             title="删除"
             circle
-            v-auth="organizationSecurity.delete"
+            v-show="row.parentId != null"
+            v-auth="sysdataSecurity.delete"
             @click="deleteEvent(row)"
           />
           <vxe-button
             icon="fa fa-plus"
             title="增加分类数据"
             circle
-            v-auth="organizationSecurity.add"
+            v-show="row.parentId == null"
+            v-auth="sysdataSecurity.add"
             @click="insertEvent(row)"
+          />
+        </template>
+        <template #pager>
+          <vxe-pager
+            v-model:current-page="$pageOption.searchData.pageIndex"
+            v-model:page-size="$pageOption.searchData.pageSize"
+            :total="$pageOption.pagination.total"
+            @page-change="pageChangeEvent"
           />
         </template>
       </vxe-grid>
@@ -205,60 +205,23 @@ const deleteEvent = async (row: any) => {
       <template #default>
         <vxe-form
           :data="$pageOption.formData"
-          :rules="$pageOption.formRules"
+          :rules="$pageOption.fromRule"
           title-align="right"
           title-width="100"
           @submit="submitEvent"
         >
-          <vxe-form-item
-            field="name"
-            title="组织机构名称"
-            :span="12"
-            :item-render="{}"
-          >
+          <vxe-form-item field="name" title="名称" :span="12" :item-render="{}">
             <template #default="{ data }">
-              <vxe-input v-model="data.name" placeholder="组织机构名称" />
-            </template>
-          </vxe-form-item>
-          <vxe-form-item
-            field="telephone"
-            title="电话"
-            :span="12"
-            :item-render="{}"
-          >
-            <template #default="{ data }">
-              <vxe-input v-model="data.telephone" placeholder="请输入电话" />
-            </template>
-          </vxe-form-item>
-          <vxe-form-item
-            field="leader"
-            title="负责人"
-            :span="12"
-            :item-render="{}"
-          >
-            <template #default="{ data }">
-              <vxe-input v-model="data.leader" placeholder="请输入负责人" />
+              <vxe-input v-model="data.name" placeholder="请输入名称" />
             </template>
           </vxe-form-item>
           <vxe-form-item field="rank" title="排序" :span="12" :item-render="{}">
             <template #default="{ data }">
               <vxe-input
-                type="integer"
+                type="number"
+                min="0"
                 v-model="data.rank"
-                placeholder="排序"
-              />
-            </template>
-          </vxe-form-item>
-          <vxe-form-item
-            field="remark"
-            title="备注信息"
-            :span="24"
-            :item-render="{}"
-          >
-            <template #default="{ data }">
-              <vxe-textarea
-                v-model="data.remark"
-                :autosize="{ minRows: 2, maxRows: 4 }"
+                placeholder="请输入排序"
               />
             </template>
           </vxe-form-item>
@@ -274,4 +237,8 @@ const deleteEvent = async (row: any) => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.expand-wrapper {
+  padding: 20px;
+}
+</style>

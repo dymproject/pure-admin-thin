@@ -14,22 +14,24 @@ import {
   UploadInstance
 } from "element-plus";
 import ots from "/@/components/Organization/OrganizationTreeSelect.vue";
-import { userSecurity } from "/@/views/securitycode";
+import dictonary from "/@/components/dictonary/DictonaryDataSelect.vue";
+import { carSecurity } from "/@/views/securitycode";
 import { fileUpload } from "/@/api/fileupload";
 import { getOrgTree } from "/@/api/organization";
 import {
-  getUserList,
-  submitUser,
-  deleteUser,
-  importUser,
-  exportUserList
-} from "/@/api/user";
+  getCarList,
+  submitCar,
+  deleteCar,
+  importCar,
+  exportCarList
+} from "/@/api/car";
 import { downloadFile } from "/@/utils/download";
 
 const $pageOption = reactive({
   searchData: {
-    name: "",
-    telephone: "",
+    plateNo: "",
+    mac: "",
+    alias: "",
     orgId: "",
     pageSize: 20,
     pageIndex: 1
@@ -46,56 +48,48 @@ const $pageOption = reactive({
   formData: {
     id: 0,
     orgId: "",
-    account: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
-    telephone: "",
-    email: "",
+    mac: "",
+    plateNo: "",
+    alias: "",
+    vin: "",
+    model: "",
+    vehicleType: "",
+    engineNo: "",
+    chassisNo: "",
+    installDate: "",
+    mtype: "",
     remark: ""
   },
   formRules: {
-    account: [
-      { required: true, message: "请输入账号" },
-      { min: 2, max: 32, message: "长度在 2 到 32 个字符" }
-    ],
-    password: [
-      { required: true, message: "请输入密码" },
-      { min: 5, max: 32, message: "长度在 5 到 32 个字符" }
-    ],
-    confirmPassword: [
-      { required: true, message: "确认密码" },
-      { min: 5, max: 32, message: "长度在 5 到 32 个字符" }
-    ],
-    name: [{ required: true, message: "请输入姓名" }],
     orgId: [{ required: true, message: "请选择组织机构" }],
-    email: [
-      { required: true, message: "请输入邮箱" },
-      {
-        pattern: "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$",
-        message: "请输入正确的邮箱格式"
-      }
+    plateNo: [
+      { required: true, message: "请输入车牌号" },
+      { min: 5, max: 32, message: "长度在 5 到 32 个字符" }
     ],
-    telephone: [
-      { required: true, message: "请输入电话" },
-      {
-        pattern: "^1([3456789][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$",
-        message: "请输入正确的电话号码"
-      }
-    ]
+    vin: [{ min: 17, max: 17, message: "长度为17位" }],
+    installDate: [{ required: true, message: "请输入安装日期" }],
+    vehicleType: [{ required: true, message: "请选择车辆类型" }],
+    mac: [{ required: true, message: "请输入识别码" }],
+    mtype: [{ required: true, message: "请选择终端类型" }]
   } as VxeFormPropTypes.Rules,
   gridColumns: [
     { type: "seq", title: "序号", width: 50, align: "center" },
-    { field: "name", title: "姓名" },
-    { field: "telephone", title: "电话" },
-    { field: "email", title: "邮箱" },
-    { field: "account", title: "账号" },
-    { field: "orgName", title: "组织机构" },
-    { field: "signinedTime", title: "登陆时间" },
-    { field: "remark", title: "备注" },
+    { field: "plateNo", title: "车牌号", width: 150 },
+    { field: "alias", title: "内部编号", width: 150 },
+    { field: "mac", title: "识别码", width: 200 },
+    { field: "installDate", title: "安装日期", width: 150 },
+    { field: "vehicleTypeStr", title: "车辆类型", width: 150 },
+    { field: "mtypeStr", title: "终端类型", width: 150 },
+    { field: "orgName", title: "组织机构", width: 150 },
+    { field: "vin", title: "VIN", width: 200 },
+    { field: "model", title: "品牌型号", width: 200 },
+    { field: "engineNo", title: "发动机编号", width: 200 },
+    { field: "chassisNo", title: "车架号", width: 200 },
+    { field: "remark", title: "备注", width: 250 },
     {
       field: "operate",
       align: "center",
+      fixed: "right",
       width: 150,
       title: "操作",
       slots: { default: "operate" }
@@ -113,7 +107,7 @@ const $pageOption = reactive({
 });
 
 const getList = () => {
-  getUserList($pageOption.searchData).then((result: any) => {
+  getCarList($pageOption.searchData).then((result: any) => {
     const { items, totalCount } = result;
     $pageOption.pagination.data = items;
     $pageOption.pagination.total = totalCount;
@@ -138,12 +132,16 @@ const insertEvent = () => {
   $pageOption.formData = {
     id: 0,
     orgId: "",
-    account: "",
-    password: "",
-    confirmPassword: "",
-    name: "",
-    telephone: "",
-    email: "",
+    plateNo: "",
+    alias: "",
+    vin: "",
+    model: "",
+    vehicleType: "",
+    engineNo: "",
+    chassisNo: "",
+    installDate: null,
+    mac: "",
+    mtype: "",
     remark: ""
   };
   $pageOption.infoOption.selectRow = null;
@@ -153,20 +151,25 @@ const editEvent = (row: any) => {
   $pageOption.formData = {
     id: row.id,
     orgId: row.orgId.toString(),
-    name: row.name,
-    telephone: row.telephone,
-    email: row.email,
-    account: row.account,
-    password: row.password,
-    confirmPassword: row.confirmPassword,
+    plateNo: row.plateNo,
+    alias: row.alias,
+    vin: row.vin,
+    model: row.model,
+    vehicleType: row.vehicleType.toString(),
+    engineNo: row.engineNo,
+    chassisNo: row.chassisNo,
+    installDate: row.installDate,
+    mac: row.mac,
+    mtype: row.mtype.toString(),
     remark: row.remark
   };
   $pageOption.infoOption.selectRow = row;
   $pageOption.infoOption.showModal = true;
 };
 const submitEvent = () => {
-  $pageOption.infoOption.submitLoading = true;
-  submitUser($pageOption.formData)
+  // $pageOption.infoOption.submitLoading = true;
+  console.log($pageOption.formData);
+  submitCar($pageOption.formData)
     .then(() => {
       $pageOption.infoOption.submitLoading = false;
       $pageOption.infoOption.showModal = false;
@@ -180,8 +183,7 @@ const submitEvent = () => {
 const deleteEvent = async (row: any) => {
   const type = await VXETable.modal.confirm("您确定要删除吗？");
   if (type == "confirm") {
-    let param = { userids: row.id };
-    deleteUser(param).then(() => {
+    deleteCar(row).then(() => {
       VXETable.modal.message({ content: "删除成功", status: "success" });
       getList();
     });
@@ -191,7 +193,7 @@ const next = () => {
   //动态加载列
   if ($pageOption.importModal.stepActive == 0) {
     //动态加载有问题的数据
-    importUser($pageOption.importModal.resFileName)
+    importCar($pageOption.importModal.resFileName)
       .then(() => {
         next();
       })
@@ -247,7 +249,7 @@ const handleRemove: UploadProps["onRemove"] = () => {
 };
 
 const exportEvent = () => {
-  exportUserList($pageOption.searchData).then(result => {
+  exportCarList($pageOption.searchData).then(result => {
     downloadFile(result);
   });
 };
@@ -279,20 +281,30 @@ const handleNodeClick = (data: Tree) => {
         <el-main style="padding: 0px 0px 0px 10px">
           <el-card>
             <vxe-form :data="$pageOption.searchData" @submit="getList">
-              <vxe-form-item title="姓名" field="name" :item-render="{}">
+              <vxe-form-item title="车牌号" field="plateNo" :item-render="{}">
                 <template #default="{ data }">
                   <vxe-input
-                    v-model="data.name"
-                    placeholder="请输入姓名"
+                    v-model="data.plateNo"
+                    placeholder="车牌号"
                     clearable
                   />
                 </template>
               </vxe-form-item>
-              <vxe-form-item title="电话" field="telephone" :item-render="{}">
+              <vxe-form-item title="识别码" field="mac" :item-render="{}">
                 <template #default="{ data }">
                   <vxe-input
-                    v-model="data.telephone"
-                    placeholder="请输入电话"
+                    v-model="data.mac"
+                    placeholder="识别码"
+                    clearable
+                  />
+                </template>
+              </vxe-form-item>
+              <vxe-form-item title="内部编号" field="alias" :item-render="{}">
+                <template #default="{ data }">
+                  <vxe-input
+                    v-model="data.alias"
+                    placeholder="识别码"
+                    clearable
                   />
                 </template>
               </vxe-form-item>
@@ -319,21 +331,21 @@ const handleNodeClick = (data: Tree) => {
                   icon="fa fa-plus"
                   status="success"
                   content="新增"
-                  v-auth="userSecurity.add"
+                  v-auth="carSecurity.add"
                   @click="insertEvent"
                 />
                 <vxe-button
                   icon="fa fa-upload"
                   status="warning"
                   content="导入"
-                  v-auth="userSecurity.import"
+                  v-auth="carSecurity.import"
                   @click="importEvent"
                 />
                 <vxe-button
                   icon="fa fa-download"
                   status="danger"
                   content="导出"
-                  v-auth="userSecurity.export"
+                  v-auth="carSecurity.export"
                   @click="exportEvent"
                 />
               </template>
@@ -349,17 +361,16 @@ const handleNodeClick = (data: Tree) => {
                   icon="fa fa-edit"
                   title="修改"
                   circle
-                  v-auth="userSecurity.edit"
+                  v-auth="carSecurity.edit"
                   @click="editEvent(row)"
                 />
                 <vxe-button
                   icon="fa fa-trash"
                   title="删除"
                   circle
-                  v-auth="userSecurity.delete"
+                  v-auth="carSecurity.delete"
                   @click="deleteEvent(row)"
                 />
-                <!-- <vxe-button icon="fa fa-eye" title="查看" circle /> -->
               </template>
               <template #pager>
                 <vxe-pager
@@ -381,9 +392,9 @@ const handleNodeClick = (data: Tree) => {
           ? '编辑数据->' + $pageOption.infoOption.selectRow.name
           : '新增数据'
       "
-      width="800"
+      width="900"
       min-width="600"
-      min-height="300"
+      height="580"
       :loading="$pageOption.infoOption.submitLoading"
       resize
       destroy-on-close
@@ -401,31 +412,31 @@ const handleNodeClick = (data: Tree) => {
             title-align="left"
             :title-width="200"
             :span="24"
-            :title-prefix="{ icon: 'fa fa-address-card-o' }"
+            :title-prefix="{ icon: 'fa fa-car' }"
           />
-          <vxe-form-item field="name" title="姓名" :span="12" :item-render="{}">
+          <vxe-form-item field="plateNo" title="车牌号" :span="12">
             <template #default="{ data }">
-              <vxe-input v-model="data.name" placeholder="请输入姓名" />
+              <vxe-input v-model="data.plateNo" placeholder="请输入车牌号" />
             </template>
           </vxe-form-item>
           <vxe-form-item
-            field="telephone"
-            title="电话"
+            field="alias"
+            title="内部编号"
             :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
-              <vxe-input v-model="data.telephone" placeholder="请输入电话" />
+              <vxe-input v-model="data.alias" placeholder="请输入内部编号" />
             </template>
           </vxe-form-item>
           <vxe-form-item
-            field="email"
-            title="邮箱"
+            field="mac"
+            title="识别码"
             :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
-              <vxe-input v-model="data.email" placeholder="请输入邮箱" />
+              <vxe-input v-model="data.mac" placeholder="请输入识别码" />
             </template>
           </vxe-form-item>
           <vxe-form-item
@@ -439,55 +450,94 @@ const handleNodeClick = (data: Tree) => {
             </template>
           </vxe-form-item>
           <vxe-form-item
-            title="账号信息"
+            field="mtype"
+            title="终端类型"
+            :span="12"
+            :item-render="{}"
+          >
+            <template #default="{ data }">
+              <dictonary
+                :dictonary-id="2"
+                v-model="data.mtype"
+                placeholder="终端类型"
+              />
+            </template>
+          </vxe-form-item>
+          <vxe-form-item
+            field="vehicleType"
+            title="车辆类型"
+            :span="12"
+            :item-render="{}"
+          >
+            <template #default="{ data }">
+              <dictonary
+                :dictonary-id="1"
+                placeholder="车辆类型"
+                v-model="data.vehicleType"
+              />
+            </template>
+          </vxe-form-item>
+          <vxe-form-item
+            field="installDate"
+            title="安装日期"
+            :span="12"
+            :item-render="{}"
+          >
+            <template #default="{ data }">
+              <vxe-input
+                type="date"
+                placeholder="请选择安装日期"
+                v-model="data.installDate"
+              />
+            </template>
+          </vxe-form-item>
+          <vxe-form-item
+            title="详细信息"
             title-align="left"
             :title-width="200"
             :span="24"
             :title-prefix="{
-              message: '用户名和密码',
+              message: '车辆详细信息',
               icon: 'fa fa-info-circle'
             }"
           />
+          <vxe-form-item field="vin" title="VIN" :span="12" :item-render="{}">
+            <template #default="{ data }">
+              <vxe-input v-model="data.vin" placeholder="请输入VIN" />
+            </template>
+          </vxe-form-item>
+
           <vxe-form-item
-            field="account"
-            title="用户名"
-            :span="24"
+            field="model"
+            title="品牌型号"
+            :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
-              <vxe-input
-                :disabled="$pageOption.infoOption.selectRow != null"
-                v-model="data.account"
-                placeholder="请输入用户名"
-              />
+              <vxe-input v-model="data.model" placeholder="请输入品牌型号" />
             </template>
           </vxe-form-item>
           <vxe-form-item
-            field="password"
-            title="密码"
+            field="engineNo"
+            title="发动机编号"
             :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
               <vxe-input
-                type="password"
-                v-model="data.password"
-                placeholder="请输入密码"
+                v-model="data.engineNo"
+                placeholder="请输入发动机编号"
               />
             </template>
           </vxe-form-item>
           <vxe-form-item
-            field="confirmPassword"
-            title="密码"
+            field="chassisNo"
+            title="车架号"
             :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
-              <vxe-input
-                type="password"
-                v-model="data.confirmPassword"
-                placeholder="确认密码"
-              />
+              <vxe-input v-model="data.chassisNo" placeholder="请输入车架号" />
             </template>
           </vxe-form-item>
           <vxe-form-item

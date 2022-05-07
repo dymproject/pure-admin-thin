@@ -40,3 +40,12 @@ export const tenantSecurity = {
   edit: "tenant.service.modify",
   delete: "tenant.service.delete"
 };
+
+export const carSecurity = {
+  list: "car.service.list",
+  add: "car.service.add",
+  edit: "car.service.modify",
+  delete: "car.service.delete",
+  import: "car.service.import",
+  export: "car.service.export"
+};

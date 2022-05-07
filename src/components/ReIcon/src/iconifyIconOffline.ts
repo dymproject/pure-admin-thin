@@ -87,9 +87,13 @@ addIcon("bookmark-2-line", bookmark2Line);
 import faUser from "@iconify-icons/fa/user";
 import faLock from "@iconify-icons/fa/lock";
 import faSignOut from "@iconify-icons/fa/sign-out";
+import faDataBase from "@iconify-icons/fa/database";
+import faCar from "@iconify-icons/fa/car";
 addIcon("fa-user", faUser);
 addIcon("fa-lock", faLock);
 addIcon("fa-sign-out", faSignOut);
+addIcon("fa-database", faDataBase);
+addIcon("fa-car", faCar);
 
 // Iconify Icon在Vue里离线使用（用于内网环境）https://docs.iconify.design/icon-components/vue/offline.html
 export default defineComponent({

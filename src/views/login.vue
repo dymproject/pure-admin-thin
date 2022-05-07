@@ -5,8 +5,8 @@ import { initRouter } from "/@/router/utils";
 import { storageSession } from "/@/utils/storage";
 import { addClass, removeClass } from "/@/utils/operate";
 import bg from "/@/assets/login/bg.png";
-import avatar from "/@/assets/login/avatar.svg?component";
-import illustration from "/@/assets/login/illustration.svg?component";
+// import avatar from "/@/assets/login/avatar.svg?component";
+import brid from "/@/assets/login/bird.svg?component";
 import { getLogin, getSecurities } from "/@/api/user";
 import { setToken } from "../utils/auth";
 import { ElLoading } from "element-plus";
@@ -61,11 +61,11 @@ function onPwdBlur() {
   <img :src="bg" class="wave" />
   <div class="login-container">
     <div class="img">
-      <illustration />
+      <brid />
     </div>
     <div class="login-box">
       <div class="login-form">
-        <avatar class="avatar" />
+        <!-- <avatar class="avatar" /> -->
         <h2
           v-motion
           :initial="{
@@ -80,7 +80,7 @@ function onPwdBlur() {
             }
           }"
         >
-          Pure Admin
+          Joyous Admin
         </h2>
         <div
           class="input-group user focus"

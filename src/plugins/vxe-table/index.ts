@@ -78,7 +78,9 @@ VXETable.setup({
     PAGER_JUMP_PREV: "fa fa-angle-double-left",
     PAGER_JUMP_NEXT: "fa fa-angle-double-right",
     PAGER_PREV_PAGE: "fa fa-angle-left",
-    PAGER_NEXT_PAGE: "fa fa-angle-right"
+    PAGER_NEXT_PAGE: "fa fa-angle-right",
+    TABLE_TREE_OPEN: "fa fa-chevron-down",
+    TABLE_TREE_CLOSE: "fa fa-chevron-right"
   },
   input: {
     clearable: true
