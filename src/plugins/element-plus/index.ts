@@ -47,7 +47,9 @@ import {
   ElAside,
   ElHeader,
   ElTree,
-  ElTreeSelect
+  ElTreeSelect,
+  ElTreeV2,
+  ElFooter
 } from "element-plus";
 
 // Directives
@@ -97,8 +99,10 @@ const components = [
   ElMain,
   ElAside,
   ElHeader,
+  ElFooter,
   ElTree,
-  ElTreeSelect
+  ElTreeSelect,
+  ElTreeV2
 ];
 
 export function useElementPlus(app: App) {
