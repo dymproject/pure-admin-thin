@@ -6,7 +6,7 @@
     "stylelint.vscode-stylelint",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "johnsoncodehk.volar",
+    "Vue.volar",
     "lokalise.i18n-ally",
     "mikestead.dotenv",
     "eamodio.gitlens",

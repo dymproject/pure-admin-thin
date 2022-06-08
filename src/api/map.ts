@@ -6,3 +6,10 @@ export const getCarTree = () => {
     method: "get"
   });
 };
+
+export const getLastTrack = () => {
+  return request({
+    url: "/map/lasttrack",
+    method: "get"
+  });
+};

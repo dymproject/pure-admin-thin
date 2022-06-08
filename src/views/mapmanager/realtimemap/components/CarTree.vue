@@ -7,24 +7,31 @@ const props = {
   label: "label",
   children: "children"
 };
-const $pageOption = reactive({
+const $comOption = reactive({
   data: []
 });
 const initTree = () => {
   getCarTree().then((result: any) => {
-    $pageOption.data = result;
-    console.log(result);
+    $comOption.data = result;
   });
 };
 initTree();
+setTimeout(() => {
+  initTree();
+}, 5000);
 </script>
 
 <template>
-  <el-tree-v2 :data="$pageOption.data" :props="props" :height="800">
+  <el-tree-v2 :data="$comOption.data" :props="props">
     <template #default="{ node, data }">
       <span class="custom-tree-node">
         <span style="margin: 5px">
-          <iconify-icon-offline icon="office-building" :color="'#000000'" />
+          <iconify-icon-offline
+            v-if="!node.isLeaf"
+            icon="office-building"
+            :color="'#000000'"
+          />
+          <iconify-icon-offline v-else icon="fa-car" :color="'#000000'" />
         </span>
         <span>
           <span>{{ node.label }}</span>

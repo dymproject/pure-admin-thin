@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import carTree from "/@/components/CarTree/CarTree.vue";
+// import carTree from "/@/components/CarTree/CarTree.vue";
 </script>
 
 <template>
   <div>
-    <car-tree />
+    <!-- <car-tree /> -->
   </div>
 </template>
 
