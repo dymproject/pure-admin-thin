@@ -22,6 +22,7 @@ const $pageOption = reactive({
     // { type: "seq", title: "序号", width: 50, align: "center" },
     { field: "id", title: "字典编号" },
     { field: "name", title: "字典名称", treeNode: "true" },
+    { field: "code", title: "字典编码" },
     { field: "rank", title: "排序" },
     {
       field: "operate",
@@ -33,6 +34,7 @@ const $pageOption = reactive({
   ] as VxeColumnProps[],
   formData: {
     id: null,
+    code: null,
     name: "",
     rank: 0,
     parentId: null
@@ -46,6 +48,7 @@ const $pageOption = reactive({
   },
   fromRule: {
     name: [{ required: true, message: "字典名称不能为空" }],
+    code: [{ required: true, message: "字典编码不能为空" }],
     rank: [{ required: true, message: "字典排序不能为空" }]
   }
 });
@@ -70,9 +73,10 @@ const pageChangeEvent: VxePagerEvents.PageChange = ({
 const insertEvent = (row: any) => {
   $pageOption.formData = {
     id: null,
+    code: null,
     name: "",
     rank: 0,
-    parentId: row.id
+    parentId: row == undefined ? null : row.id
   };
   $pageOption.infoOption.selectRow = null;
   $pageOption.infoOption.showModal = true;
@@ -80,6 +84,7 @@ const insertEvent = (row: any) => {
 const editEvent = (row: any) => {
   $pageOption.formData = {
     id: row.id,
+    code: row.code,
     name: row.name,
     parentId: row.parentId,
     rank: row.rank
@@ -142,6 +147,17 @@ const deleteEvent = async (row: any) => {
           </template>
         </vxe-form-item>
       </vxe-form>
+      <vxe-toolbar>
+        <template #tools>
+          <vxe-button
+            icon="fa fa-plus"
+            status="success"
+            content="新增"
+            v-auth="sysdataSecurity.add"
+            @click="insertEvent"
+          />
+        </template>
+      </vxe-toolbar>
       <vxe-grid
         ref="xGrid"
         :height="650"
@@ -210,9 +226,24 @@ const deleteEvent = async (row: any) => {
           title-width="100"
           @submit="submitEvent"
         >
-          <vxe-form-item field="name" title="名称" :span="12" :item-render="{}">
+          <vxe-form-item
+            field="name"
+            title="字典名称"
+            :span="12"
+            :item-render="{}"
+          >
             <template #default="{ data }">
               <vxe-input v-model="data.name" placeholder="请输入名称" />
+            </template>
+          </vxe-form-item>
+          <vxe-form-item
+            field="code"
+            title="字典编码"
+            :span="12"
+            :item-render="{}"
+          >
+            <template #default="{ data }">
+              <vxe-input v-model="data.code" placeholder="请输入编码" />
             </template>
           </vxe-form-item>
           <vxe-form-item field="rank" title="排序" :span="12" :item-render="{}">

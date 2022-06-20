@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { reactive } from "vue";
-import { getDictonaryChildren } from "/@/api/dictonary";
+import { getDictonaryChildrenByCode } from "/@/api/dictonary";
 
-const props = defineProps<{ dictonaryId: number; placeholder: string }>();
+const props = defineProps<{ dictonaryCode: string; placeholder: string }>();
 
 const selectOption = reactive({
   data: [],
@@ -11,7 +11,7 @@ const selectOption = reactive({
 defineExpose({ selectOption });
 
 const initDict = () => {
-  getDictonaryChildren(props.dictonaryId).then((selectData: any) => {
+  getDictonaryChildrenByCode(props.dictonaryCode).then((selectData: any) => {
     selectOption.data = selectData;
   });
 };
@@ -23,7 +23,7 @@ initDict();
     <vxe-option
       v-for="option in selectOption.data"
       :key="option.id"
-      :value="option.id"
+      :value="option.code"
       :label="option.name"
     />
   </vxe-select>

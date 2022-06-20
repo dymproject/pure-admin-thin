@@ -1,35 +1,172 @@
 <script setup lang="ts">
+import { ref } from "vue";
+import { TreeNodeData } from "element-plus/es/components/tree-v2/src/types";
 import openMap from "./components/Map.vue";
 import carTree from "./components/CarTree.vue";
-import LocationTable from "./components/LocationTable.vue";
-import { reactive } from "vue";
+import { decryptJWT, getLastTrack } from "/@/api/map";
+import { TrackData, TrackDataProfile } from "/@/api/map";
+import { HubConnectionBuilder } from "@microsoft/signalr";
+import { storageSession } from "/@/utils/storage";
+import { loadEnv } from "@build/index";
 
-import { mapCarItem } from "./type";
-const $pageOption = reactive({
-  mapCarItems: Array<mapCarItem>()
-});
-$pageOption.mapCarItems = [
-  {
-    plateNo: "京12345",
-    longitude: 116.285982,
-    latitude: 39.8304
-  },
-  { plateNo: "京sfsfs", longitude: 116.397497, latitude: 39.907631 }
-];
+const tableData = ref([]);
+const trackTable = ref();
+//位置数据map
+let trackDataMap = new Map();
+
+const getList = () => {
+  getLastTrack().then((result: any) => {
+    tableData.value = result;
+    map.value.addFeature(result);
+  });
+};
+getList();
+
+const map = ref();
+const tree = ref();
+
+const treeClickEvent = (data: TreeNodeData) => {
+  if (!data.isOrganization) {
+    const { trackData } = data;
+    if (trackData) {
+      map.value.moveToMapCenter([trackData.longitude, trackData.latitude]);
+      trackTable.value.setCurrentRow(trackData);
+    }
+  }
+};
+const treeRightClickEvent = (e: Event, data: TreeNodeData) => {
+  var trackData = data.trackData as TrackData;
+  console.log(trackData);
+  // const trackData = tableData.value.find((x: TrackData) => {
+  //   return x.carId == 4;
+  // });
+  // map.value.moveCarFeature(tableData.value[0]);
+};
+
+const tableDblClick = (row: { row: TrackData }) => {
+  const record: TrackData = row.row;
+  //移动到地图中心
+  map.value.moveToMapCenter([record.longitude, record.latitude]);
+};
+
+const listenTracks = (trackData: TrackData) => {
+  //填充trackdatamap
+  trackDataMap.set(trackData.mac, trackData);
+  //移动车辆
+  map.value.moveCar(trackData);
+  //更新实时table
+  const record: TrackDataProfile = tableData.value.find(
+    (data: TrackDataProfile) => {
+      return data.mac == trackData.mac;
+    }
+  );
+  record.gnssTime = trackData.gnssTime;
+  record.longitude = trackData.longitude;
+  record.latitude = trackData.latitude;
+  record.speed = trackData.speed;
+  record.heading = trackData.heading;
+  record.status = trackData.status;
+  record.locateMode = trackData.locateMode;
+  record.mileage = trackData.mileage;
+  record.position = trackData.position;
+  record.signalStrength = trackData.signalStrength;
+  record.satellitenCount = trackData.satellitenCount;
+  record.precision = trackData.precision;
+  record.battery = trackData.battery;
+  //更新tree
+  tree.value.updateTreeNode(trackData);
+};
+
+const listenTreeData = (data: any) => {
+  tree.value.setData(data);
+  // console.log(data);
+};
+
+//获取token
+const { accessToken } = storageSession.getItem("info");
+const token = decryptJWT(accessToken);
+
+//初始化signalr HubConnection对象
+const connection = new HubConnectionBuilder()
+  .withUrl(loadEnv().VITE_PROXY_DOMAIN_REAL + "/hubs/chathub", {
+    accessTokenFactory: () => accessToken
+  })
+  .build();
+//启动连接
+connection.start();
+//监听track数据
+connection.on("ListenTracks", listenTracks);
+//监听tree数据
+connection.on("ListenTreeData", listenTreeData);
+
+//调用Hub方法
+const reloadTreeData = () => {
+  connection.send("ReloadTreeData", token.TenantId, token.OrganizationId);
+};
 </script>
 
 <template>
   <div>
     <el-row :gutter="20">
-      <el-col :span="6"><car-tree style="height: 100%" /></el-col>
+      <el-col :span="6">
+        <car-tree
+          ref="tree"
+          class="tree-bg-color"
+          @reload-tree-data="reloadTreeData"
+          @node-contextmenu="treeRightClickEvent"
+          @node-click="treeClickEvent"
+          :height="880"
+        />
+      </el-col>
       <el-col :span="18">
         <el-row>
-          <el-col><open-map :map-car-items="$pageOption.mapCarItems" /></el-col>
-          <el-col><location-table /> </el-col>
+          <el-col>
+            <open-map ref="map" />
+          </el-col>
+          <el-col>
+            <vxe-table
+              ref="trackTable"
+              border
+              height="280"
+              show-header-overflow
+              show-overflow
+              :row-config="{ isCurrent: true, isHover: true }"
+              :data="tableData"
+              @cell-dblclick="tableDblClick"
+              class="footer"
+            >
+              <vxe-column type="seq" align="center" title="序号" width="60" />
+              <vxe-column field="plateNo" title="车牌号" min-width="100" />
+              <vxe-column field="orgName" title="单位" min-width="100" />
+              <vxe-column field="mac" title="识别码" min-width="150" />
+              <vxe-column field="sim" title="SIM卡" min-width="150" />
+              <vxe-column field="gnssTime" title="定位时间" min-width="180" />
+              <vxe-column field="longitude" title="经度" min-width="100" />
+              <vxe-column field="latitude" title="纬度" min-width="100" />
+              <vxe-column field="speed" title="速度" min-width="80" />
+              <vxe-column field="heading" title="方向" min-width="80" />
+              <vxe-column field="position" title="位置" min-width="200" />
+              <vxe-column field="status" title="状态" min-width="100" />
+              <vxe-column field="locateMode" title="定位模式" min-width="100" />
+              <vxe-column field="mileage" title="里程(km)" min-width="100" />
+              <vxe-column field="signalStrength" title="场强" min-width="100" />
+              <vxe-column
+                field="satellitenCount"
+                title="卫星数"
+                min-width="100"
+              />
+              <vxe-column field="precision" title="精度" min-width="100" />
+              <vxe-column field="battery" title="电量" min-width="100" />
+            </vxe-table>
+          </el-col>
         </el-row>
       </el-col>
     </el-row>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.tree-bg-color {
+  background-color: #d7f7ed;
+}
+</style>

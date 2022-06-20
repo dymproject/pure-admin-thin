@@ -22,6 +22,7 @@ import Guide from "@iconify-icons/ep/guide";
 import User from "@iconify-icons/ep/user";
 import Iphone from "@iconify-icons/ep/iphone";
 import Location from "@iconify-icons/ep/location";
+import MapLocation from "@iconify-icons/ep/map-location";
 import Tickets from "@iconify-icons/ep/tickets";
 import OfficeBuilding from "@iconify-icons/ep/office-building";
 import Notebook from "@iconify-icons/ep/notebook";
@@ -49,6 +50,7 @@ addIcon("guide", Guide);
 addIcon("user", User);
 addIcon("iphone", Iphone);
 addIcon("location", Location);
+addIcon("map-location", MapLocation);
 addIcon("tickets", Tickets);
 addIcon("office-building", OfficeBuilding);
 addIcon("notebook", Notebook);
@@ -88,14 +90,18 @@ import faUser from "@iconify-icons/fa/user";
 import faLock from "@iconify-icons/fa/lock";
 import faSignOut from "@iconify-icons/fa/sign-out";
 import faDataBase from "@iconify-icons/fa/database";
-import faCar from "@iconify-icons/fa/car";
+import faCar from "@iconify-icons/fa/automobile";
+import faHome from "@iconify-icons/fa/home";
 import faFlag from "@iconify-icons/fa/flag";
+import faTable from "@iconify-icons/fa/table";
 addIcon("fa-user", faUser);
 addIcon("fa-lock", faLock);
 addIcon("fa-sign-out", faSignOut);
 addIcon("fa-database", faDataBase);
-addIcon("fa-car", faCar);
+addIcon("fa-automobile", faCar);
+addIcon("fa-home", faHome);
 addIcon("fa-flag", faFlag);
+addIcon("fa-table", faTable);
 
 // Iconify Icon在Vue里离线使用（用于内网环境）https://docs.iconify.design/icon-components/vue/offline.html
 export default defineComponent({

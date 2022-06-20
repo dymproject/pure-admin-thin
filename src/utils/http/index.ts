@@ -70,7 +70,7 @@ service.interceptors.response.use(
       if (responseType == "blob") {
         return response;
       } else if (success) {
-        return data;
+        return Promise.resolve(data);
       } else {
         if (code == 401) {
           ElMessageBox.confirm("长时间未操作，请重新登录", "提醒", {

@@ -29,3 +29,10 @@ export const getDictonaryChildren = (id: number) => {
     method: "get"
   });
 };
+
+export const getDictonaryChildrenByCode = (code: string) => {
+  return request({
+    url: "dictonarydata/data/" + code,
+    method: "get"
+  });
+};

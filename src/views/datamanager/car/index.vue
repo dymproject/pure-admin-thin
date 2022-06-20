@@ -32,7 +32,7 @@ const $pageOption = reactive({
     plateNo: "",
     mac: "",
     alias: "",
-    orgId: "",
+    organizationId: "",
     pageSize: 20,
     pageIndex: 1
   },
@@ -47,7 +47,7 @@ const $pageOption = reactive({
   },
   formData: {
     id: 0,
-    orgId: "",
+    organizationId: "",
     mac: "",
     plateNo: "",
     alias: "",
@@ -61,7 +61,7 @@ const $pageOption = reactive({
     remark: ""
   },
   formRules: {
-    orgId: [{ required: true, message: "请选择组织机构" }],
+    organizationId: [{ required: true, message: "请选择组织机构" }],
     plateNo: [
       { required: true, message: "请输入车牌号" },
       { min: 5, max: 32, message: "长度在 5 到 32 个字符" }
@@ -131,7 +131,7 @@ const pageChangeEvent: VxePagerEvents.PageChange = ({
 const insertEvent = () => {
   $pageOption.formData = {
     id: 0,
-    orgId: "",
+    organizationId: "",
     plateNo: "",
     alias: "",
     vin: "",
@@ -150,7 +150,7 @@ const insertEvent = () => {
 const editEvent = (row: any) => {
   $pageOption.formData = {
     id: row.id,
-    orgId: row.orgId.toString(),
+    organizationId: row.organizationId.toString(),
     plateNo: row.plateNo,
     alias: row.alias,
     vin: row.vin,
@@ -259,7 +259,7 @@ interface Tree {
   children?: Tree[];
 }
 const handleNodeClick = (data: Tree) => {
-  $pageOption.searchData.orgId = data.value;
+  $pageOption.searchData.organizationId = data.value;
   getList();
 };
 </script>
@@ -440,13 +440,13 @@ const handleNodeClick = (data: Tree) => {
             </template>
           </vxe-form-item>
           <vxe-form-item
-            field="orgId"
+            field="organizationId"
             title="组织机构"
             :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
-              <ots v-model="data.orgId" />
+              <ots v-model="data.organizationId" />
             </template>
           </vxe-form-item>
           <vxe-form-item
@@ -457,7 +457,7 @@ const handleNodeClick = (data: Tree) => {
           >
             <template #default="{ data }">
               <dictonary
-                :dictonary-id="2"
+                :dictonary-code="'vehicletype'"
                 v-model="data.mtype"
                 placeholder="终端类型"
               />
@@ -471,7 +471,7 @@ const handleNodeClick = (data: Tree) => {
           >
             <template #default="{ data }">
               <dictonary
-                :dictonary-id="1"
+                :dictonary-code="'mtype'"
                 placeholder="车辆类型"
                 v-model="data.vehicleType"
               />

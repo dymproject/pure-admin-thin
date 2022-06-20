@@ -1,37 +1,72 @@
 <script setup lang="ts">
-import { reactive } from "vue";
-import { getCarTree } from "/@/api/map";
+import { ElTreeV2 } from "element-plus";
+import { ref } from "vue";
+import { CarTreeProfile, getCarTree, TrackData } from "/@/api/map";
+
+const emit = defineEmits(["reload-tree-data"]);
 
 const props = {
   value: "id",
   label: "label",
   children: "children"
 };
-const $comOption = reactive({
-  data: []
-});
+const treeRef = ref<InstanceType<typeof ElTreeV2>>();
+const treeData = ref();
 const initTree = () => {
   getCarTree().then((result: any) => {
-    $comOption.data = result;
+    treeData.value = result;
   });
 };
+const updateTreeNode = (trackData: TrackData) => {
+  function traverse(nodes: CarTreeProfile[]) {
+    nodes.forEach(node => {
+      const children = node.children;
+      if (node.trackData && node.trackData.mac == trackData.mac) {
+        if (node.color == "#000000") {
+          console.log("更新树");
+          emit("reload-tree-data");
+        }
+        if (trackData.locateMode == "") {
+          node.color = "#FFFFFF";
+        } else if (trackData.speed > 0) {
+          node.color = "#00FF00";
+        } else if (trackData.speed == 0) {
+          node.color = "#FFFF00";
+        } else {
+          node.color = "#000000";
+        }
+        node.trackData = trackData;
+        return;
+      }
+      if (children) {
+        traverse(children);
+      }
+    });
+  }
+  const nodes = treeData.value as CarTreeProfile[];
+  traverse(nodes);
+};
+
 initTree();
-setTimeout(() => {
-  initTree();
-}, 5000);
+
+defineExpose({ treeData, updateTreeNode });
 </script>
 
 <template>
-  <el-tree-v2 :data="$comOption.data" :props="props">
+  <el-tree-v2 ref="treeRef" :data="treeData" :props="props">
     <template #default="{ node, data }">
       <span class="custom-tree-node">
         <span style="margin: 5px">
           <iconify-icon-offline
             v-if="!node.isLeaf"
-            icon="office-building"
-            :color="'#000000'"
+            icon="fa-home"
+            :color="'#4B4B4B'"
           />
-          <iconify-icon-offline v-else icon="fa-car" :color="'#000000'" />
+          <iconify-icon-offline
+            v-else
+            icon="fa-automobile"
+            :color="data.color"
+          />
         </span>
         <span>
           <span>{{ node.label }}</span>

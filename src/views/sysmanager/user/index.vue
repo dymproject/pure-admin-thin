@@ -30,7 +30,7 @@ const $pageOption = reactive({
   searchData: {
     name: "",
     telephone: "",
-    orgId: "",
+    organizationId: "",
     pageSize: 20,
     pageIndex: 1
   },
@@ -45,7 +45,7 @@ const $pageOption = reactive({
   },
   formData: {
     id: 0,
-    orgId: "",
+    organizationId: "",
     account: "",
     password: "",
     confirmPassword: "",
@@ -68,7 +68,7 @@ const $pageOption = reactive({
       { min: 5, max: 32, message: "长度在 5 到 32 个字符" }
     ],
     name: [{ required: true, message: "请输入姓名" }],
-    orgId: [{ required: true, message: "请选择组织机构" }],
+    organizationId: [{ required: true, message: "请选择组织机构" }],
     email: [
       { required: true, message: "请输入邮箱" },
       {
@@ -137,7 +137,7 @@ const pageChangeEvent: VxePagerEvents.PageChange = ({
 const insertEvent = () => {
   $pageOption.formData = {
     id: 0,
-    orgId: "",
+    organizationId: "",
     account: "",
     password: "",
     confirmPassword: "",
@@ -152,7 +152,7 @@ const insertEvent = () => {
 const editEvent = (row: any) => {
   $pageOption.formData = {
     id: row.id,
-    orgId: row.orgId.toString(),
+    organizationId: row.organizationId.toString(),
     name: row.name,
     telephone: row.telephone,
     email: row.email,
@@ -257,7 +257,7 @@ interface Tree {
   children?: Tree[];
 }
 const handleNodeClick = (data: Tree) => {
-  $pageOption.searchData.orgId = data.value;
+  $pageOption.searchData.organizationId = data.value;
   getList();
 };
 </script>
@@ -429,13 +429,13 @@ const handleNodeClick = (data: Tree) => {
             </template>
           </vxe-form-item>
           <vxe-form-item
-            field="orgId"
+            field="organizationId"
             title="组织机构"
             :span="12"
             :item-render="{}"
           >
             <template #default="{ data }">
-              <ots v-model="data.orgId" />
+              <ots v-model="data.organizationId" />
             </template>
           </vxe-form-item>
           <vxe-form-item
