@@ -37,7 +37,7 @@ watch(
 <template>
   <div class="horizontal-header">
     <div class="horizontal-header-left" @click="backHome">
-      <FontIcon icon="team-iconlogo" svg style="width: 35px; height: 35px" />
+      <!-- <FontIcon icon="team-iconlogo" svg style="width: 35px; height: 35px" /> -->
       <h4>{{ title }}</h4>
     </div>
     <el-menu

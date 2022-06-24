@@ -30,7 +30,10 @@ const treeClickEvent = (data: TreeNodeData) => {
     const { trackData } = data;
     if (trackData) {
       map.value.moveToMapCenter([trackData.longitude, trackData.latitude]);
-      trackTable.value.setCurrentRow(trackData);
+      map.value.setFollowCar(trackData);
+      var row = trackTable.value.getRowById(trackData.mac);
+      trackTable.value.setCurrentRow(row);
+      trackTable.value.scrollToRow(row);
     }
   }
 };
@@ -47,6 +50,8 @@ const tableDblClick = (row: { row: TrackData }) => {
   const record: TrackData = row.row;
   //移动到地图中心
   map.value.moveToMapCenter([record.longitude, record.latitude]);
+  //设置跟踪车辆
+  map.value.setFollowCar(record);
 };
 
 const listenTracks = (trackData: TrackData) => {
@@ -65,7 +70,7 @@ const listenTracks = (trackData: TrackData) => {
   record.latitude = trackData.latitude;
   record.speed = trackData.speed;
   record.heading = trackData.heading;
-  record.status = trackData.status;
+  record.statusStr = trackData.statusStr;
   record.locateMode = trackData.locateMode;
   record.mileage = trackData.mileage;
   record.position = trackData.position;
@@ -79,7 +84,9 @@ const listenTracks = (trackData: TrackData) => {
 
 const listenTreeData = (data: any) => {
   tree.value.setData(data);
-  // console.log(data);
+};
+const listenOfflineCar = (data: string[]) => {
+  map.value.setCarOffline(data);
 };
 
 //获取token
@@ -98,11 +105,18 @@ connection.start();
 connection.on("ListenTracks", listenTracks);
 //监听tree数据
 connection.on("ListenTreeData", listenTreeData);
-
-//调用Hub方法
+//监听刷新离线mac数据
+connection.on("ListenOfflineCar", listenOfflineCar);
+//重新加载tree数据
 const reloadTreeData = () => {
   connection.send("ReloadTreeData", token.TenantId, token.OrganizationId);
 };
+const refreshCarStatus = () => {
+  setInterval(() => {
+    connection.send("RefreshCarStatus", token.TenantId, token.OrganizationId);
+  }, 1000 * 20);
+};
+refreshCarStatus();
 </script>
 
 <template>
@@ -130,14 +144,14 @@ const reloadTreeData = () => {
               height="280"
               show-header-overflow
               show-overflow
-              :row-config="{ isCurrent: true, isHover: true }"
+              :row-config="{ isCurrent: true, isHover: true, keyField: 'mac' }"
               :data="tableData"
               @cell-dblclick="tableDblClick"
               class="footer"
             >
               <vxe-column type="seq" align="center" title="序号" width="60" />
-              <vxe-column field="plateNo" title="车牌号" min-width="100" />
-              <vxe-column field="orgName" title="单位" min-width="100" />
+              <vxe-column field="plateNo" title="车牌号" min-width="150" />
+              <vxe-column field="orgName" title="单位" min-width="200" />
               <vxe-column field="mac" title="识别码" min-width="150" />
               <vxe-column field="sim" title="SIM卡" min-width="150" />
               <vxe-column field="gnssTime" title="定位时间" min-width="180" />
@@ -146,7 +160,12 @@ const reloadTreeData = () => {
               <vxe-column field="speed" title="速度" min-width="80" />
               <vxe-column field="heading" title="方向" min-width="80" />
               <vxe-column field="position" title="位置" min-width="200" />
-              <vxe-column field="status" title="状态" min-width="100" />
+              <vxe-column field="statusStr" title="状态" min-width="100" />
+              <vxe-column field="locate" title="是否定位" min-width="100">
+                <template #default="{ row }">
+                  {{ row.locate ? "是" : "否" }}
+                </template>
+              </vxe-column>
               <vxe-column field="locateMode" title="定位模式" min-width="100" />
               <vxe-column field="mileage" title="里程(km)" min-width="100" />
               <vxe-column field="signalStrength" title="场强" min-width="100" />

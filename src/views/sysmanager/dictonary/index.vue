@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from "vue";
-import { VxePagerEvents, VxeColumnProps, VXETable } from "vxe-table";
+import { VxePagerEvents, VXETable } from "vxe-table";
 import {
   submitDictonaryData,
   getDictonaryDataList,
@@ -18,20 +18,6 @@ const $pageOption = reactive({
     total: 0,
     data: []
   },
-  gridColumns: [
-    // { type: "seq", title: "序号", width: 50, align: "center" },
-    { field: "id", title: "字典编号" },
-    { field: "name", title: "字典名称", treeNode: "true" },
-    { field: "code", title: "字典编码" },
-    { field: "rank", title: "排序" },
-    {
-      field: "operate",
-      align: "center",
-      width: 250,
-      title: "操作",
-      slots: { default: "operate" }
-    }
-  ] as VxeColumnProps[],
   formData: {
     id: null,
     code: null,
@@ -158,51 +144,87 @@ const deleteEvent = async (row: any) => {
           />
         </template>
       </vxe-toolbar>
-      <vxe-grid
-        ref="xGrid"
-        :height="650"
+      <vxe-table
+        ref="xTable"
+        :height="600"
         :tree-config="{
-          transform: true,
-          rowField: 'id',
-          parentField: 'parentId'
+          transform: true
         }"
         :data="$pageOption.pagination.data"
-        :columns="$pageOption.gridColumns"
       >
-        <template #operate="{ row }">
-          <vxe-button
-            icon="fa fa-edit"
-            title="修改"
-            circle
-            v-auth="sysdataSecurity.edit"
-            @click="editEvent(row)"
-          />
-          <vxe-button
-            icon="fa fa-trash"
-            title="删除"
-            circle
-            v-show="row.parentId != null"
-            v-auth="sysdataSecurity.delete"
-            @click="deleteEvent(row)"
-          />
-          <vxe-button
-            icon="fa fa-plus"
-            title="增加分类数据"
-            circle
-            v-show="row.parentId == null"
-            v-auth="sysdataSecurity.add"
-            @click="insertEvent(row)"
-          />
-        </template>
-        <template #pager>
-          <vxe-pager
-            v-model:current-page="$pageOption.searchData.pageIndex"
-            v-model:page-size="$pageOption.searchData.pageSize"
-            :total="$pageOption.pagination.total"
-            @page-change="pageChangeEvent"
-          />
-        </template>
-      </vxe-grid>
+        <vxe-column
+          field="id"
+          title="展开行"
+          width="100"
+          align="center"
+          type="expand"
+        >
+          <template #content="{ row }">
+            <div class="expand-wrapper">
+              <vxe-table :data="row.childDictonaryList">
+                <vxe-column field="name" title="名称" />
+                <vxe-column field="code" title="编码" />
+                <vxe-column field="rank" title="排序" />
+                <vxe-column field="operate" title="操作">
+                  <template #default="{ row }">
+                    <vxe-button
+                      icon="fa fa-edit"
+                      title="修改"
+                      circle
+                      v-auth="sysdataSecurity.edit"
+                      @click="editEvent(row)"
+                    />
+                    <vxe-button
+                      icon="fa fa-trash"
+                      title="删除"
+                      circle
+                      v-show="row.parentId != null"
+                      v-auth="sysdataSecurity.delete"
+                      @click="deleteEvent(row)"
+                    />
+                  </template>
+                </vxe-column>
+              </vxe-table>
+            </div>
+          </template>
+        </vxe-column>
+        <vxe-column field="name" title="名称" />
+        <vxe-column field="code" title="编码" />
+        <vxe-column field="rank" title="排序" />
+        <vxe-column field="operate" title="操作">
+          <template #default="{ row }">
+            <vxe-button
+              icon="fa fa-edit"
+              title="修改"
+              circle
+              v-auth="sysdataSecurity.edit"
+              @click="editEvent(row)"
+            />
+            <vxe-button
+              icon="fa fa-trash"
+              title="删除"
+              circle
+              v-show="row.parentId != null"
+              v-auth="sysdataSecurity.delete"
+              @click="deleteEvent(row)"
+            />
+            <vxe-button
+              icon="fa fa-plus"
+              title="增加分类数据"
+              circle
+              v-show="row.parentId == null"
+              v-auth="sysdataSecurity.add"
+              @click="insertEvent(row)"
+            />
+          </template>
+        </vxe-column>
+      </vxe-table>
+      <vxe-pager
+        v-model:current-page="$pageOption.searchData.pageIndex"
+        v-model:page-size="$pageOption.searchData.pageSize"
+        :total="$pageOption.pagination.total"
+        @page-change="pageChangeEvent"
+      />
     </el-card>
     <vxe-modal
       v-model="$pageOption.infoOption.showModal"

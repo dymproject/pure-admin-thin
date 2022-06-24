@@ -80,7 +80,7 @@ const $pageOption = reactive({
     { field: "installDate", title: "安装日期", width: 150 },
     { field: "vehicleTypeStr", title: "车辆类型", width: 150 },
     { field: "mtypeStr", title: "终端类型", width: 150 },
-    { field: "orgName", title: "组织机构", width: 150 },
+    { field: "orgName", title: "组织机构", width: 250 },
     { field: "vin", title: "VIN", width: 200 },
     { field: "model", title: "品牌型号", width: 200 },
     { field: "engineNo", title: "发动机编号", width: 200 },
@@ -268,14 +268,15 @@ const handleNodeClick = (data: Tree) => {
   <div>
     <el-container style="position: relative">
       <el-aside width="300px">
-        <el-tree
-          class="org-tree"
-          :highlight-current="true"
-          :default-expand-all="true"
-          :expand-on-click-node="false"
-          :data="$pageOption.treeData"
-          @node-click="handleNodeClick"
-        />
+        <el-card style="height: 785px; overflow: auto">
+          <el-tree
+            :highlight-current="true"
+            :default-expand-all="false"
+            :expand-on-click-node="false"
+            :data="$pageOption.treeData"
+            @node-click="handleNodeClick"
+          />
+        </el-card>
       </el-aside>
       <el-container>
         <el-main style="padding: 0px 0px 0px 10px">
@@ -457,7 +458,7 @@ const handleNodeClick = (data: Tree) => {
           >
             <template #default="{ data }">
               <dictonary
-                :dictonary-code="'vehicletype'"
+                :dictonary-code="'mtype'"
                 v-model="data.mtype"
                 placeholder="终端类型"
               />
@@ -471,7 +472,7 @@ const handleNodeClick = (data: Tree) => {
           >
             <template #default="{ data }">
               <dictonary
-                :dictonary-code="'mtype'"
+                :dictonary-code="'vehicletype'"
                 placeholder="车辆类型"
                 v-model="data.vehicleType"
               />
@@ -645,10 +646,4 @@ const handleNodeClick = (data: Tree) => {
   </div>
 </template>
 
-<style scoped>
-.org-tree {
-  padding: 20px;
-  height: 100%;
-  border-radius: 5px;
-}
-</style>
+<style scoped></style>

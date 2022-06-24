@@ -18,7 +18,7 @@ const title =
         class="sidebar-logo-link"
         to="/"
       >
-        <FontIcon icon="team-iconlogo" svg style="width: 35px; height: 35px" />
+        <!-- <FontIcon icon="team-iconlogo" svg style="width: 35px; height: 35px" /> -->
         <span class="sidebar-title">{{ title }}</span>
       </router-link>
       <router-link
@@ -28,7 +28,7 @@ const title =
         class="sidebar-logo-link"
         to="/"
       >
-        <FontIcon icon="team-iconlogo" svg style="width: 35px; height: 35px" />
+        <!-- <FontIcon icon="team-iconlogo" svg style="width: 35px; height: 35px" /> -->
         <span class="sidebar-title">{{ title }}</span>
       </router-link>
     </transition>
@@ -48,13 +48,14 @@ const title =
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    margin-top: 5px;
+    // margin-top: 5px;
 
     .sidebar-title {
       color: #1890ff;
       font-weight: 600;
       font-size: 20px;
       margin-top: 10px;
+      width: 95%;
       font-family: Avenir, Helvetica Neue, Arial, Helvetica, sans-serif;
     }
   }

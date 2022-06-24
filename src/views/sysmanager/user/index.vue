@@ -266,14 +266,15 @@ const handleNodeClick = (data: Tree) => {
   <div>
     <el-container style="position: relative">
       <el-aside width="300px">
-        <el-tree
-          class="org-tree"
-          :highlight-current="true"
-          :default-expand-all="true"
-          :expand-on-click-node="false"
-          :data="$pageOption.treeData"
-          @node-click="handleNodeClick"
-        />
+        <el-card style="height: 785px; overflow: auto">
+          <el-tree
+            :highlight-current="true"
+            :default-expand-all="true"
+            :expand-on-click-node="false"
+            :data="$pageOption.treeData"
+            @node-click="handleNodeClick"
+          />
+        </el-card>
       </el-aside>
       <el-container>
         <el-main style="padding: 0px 0px 0px 10px">

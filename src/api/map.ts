@@ -30,18 +30,27 @@ export interface TrackData {
   gnssTime: Date;
   heading: number;
   latitude: number;
+  locate: boolean;
   locateMode: string;
   longitude: number;
   mac: string;
   mileage: number;
-  offsetX: number;
-  offsetY: number;
   position: string;
   precision: number;
   satellitenCount: number;
   signalStrength: number;
   speed: number;
-  status: string;
+  statusStr: string;
+  alarm: boolean;
+  alarmInfo: string;
+}
+
+export enum TreeIconColorEnum {
+  red = "#FF0000",
+  white = "#FFFFFF",
+  green = "#00FF00",
+  yellow = "#FFFF00",
+  black = "#000000"
 }
 
 export interface TrackDataProfile extends TrackData {

@@ -80,7 +80,9 @@ VXETable.setup({
     PAGER_PREV_PAGE: "fa fa-angle-left",
     PAGER_NEXT_PAGE: "fa fa-angle-right",
     TABLE_TREE_OPEN: "fa fa-chevron-down",
-    TABLE_TREE_CLOSE: "fa fa-chevron-right"
+    TABLE_TREE_CLOSE: "fa fa-chevron-right",
+    TABLE_EXPAND_OPEN: "fa fa-chevron-down",
+    TABLE_EXPAND_CLOSE: "fa fa-chevron-right"
   },
   input: {
     clearable: true

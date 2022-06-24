@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { ElTreeV2 } from "element-plus";
 import { ref } from "vue";
-import { CarTreeProfile, getCarTree, TrackData } from "/@/api/map";
+import {
+  CarTreeProfile,
+  getCarTree,
+  TrackData,
+  TreeIconColorEnum
+} from "/@/api/map";
 
 const emit = defineEmits(["reload-tree-data"]);
 
@@ -22,18 +27,19 @@ const updateTreeNode = (trackData: TrackData) => {
     nodes.forEach(node => {
       const children = node.children;
       if (node.trackData && node.trackData.mac == trackData.mac) {
-        if (node.color == "#000000") {
-          console.log("更新树");
+        if (node.color == TreeIconColorEnum.black) {
           emit("reload-tree-data");
         }
-        if (trackData.locateMode == "") {
-          node.color = "#FFFFFF";
+        if (!trackData.locate) {
+          node.color = TreeIconColorEnum.white;
+        } else if (trackData.alarm) {
+          node.color = TreeIconColorEnum.red;
         } else if (trackData.speed > 0) {
-          node.color = "#00FF00";
+          node.color = TreeIconColorEnum.green;
         } else if (trackData.speed == 0) {
-          node.color = "#FFFF00";
+          node.color = TreeIconColorEnum.yellow;
         } else {
-          node.color = "#000000";
+          node.color = TreeIconColorEnum.black;
         }
         node.trackData = trackData;
         return;

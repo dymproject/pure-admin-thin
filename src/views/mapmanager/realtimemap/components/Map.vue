@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, reactive } from "vue";
+import { nextTick, reactive, ref } from "vue";
 import { Map as OpenLayersMap, Overlay, View } from "ol";
 import "ol/ol.css";
 import { Vector as VectorSource, XYZ } from "ol/source";
@@ -12,7 +12,7 @@ import { Coordinate } from "ol/coordinate";
 import { TrackData, TrackDataProfile } from "/@/api/map";
 import run from "/@/assets/car/run.png";
 import stop from "/@/assets/car/stop.png";
-// import alarm from "/@/assets/car/alarm.png";
+import alarm from "/@/assets/car/alarm.png";
 import nogps from "/@/assets/car/nogps.png";
 import off from "/@/assets/car/off.png";
 
@@ -39,7 +39,8 @@ const info = reactive({
   plateNo: "",
   orgName: "",
   longitude: null,
-  latitude: null
+  latitude: null,
+  gnssTime: null
 });
 const initMap = () => {
   const infoPopup = document.getElementById("popup");
@@ -68,6 +69,7 @@ const initMap = () => {
       info.longitude = extData.longitude;
       info.latitude = extData.latitude;
       info.orgName = extData.orgName;
+      info.gnssTime = extData.gnssTime;
       popupOverLay.setPosition(evt.coordinate);
       infoPopup.style.display = "block";
     } else {
@@ -80,12 +82,14 @@ const getFeatureImageUrl = (item: TrackData): string => {
   let seconds =
     (new Date().getTime() - new Date(item.gnssTime).getTime()) / 1000;
   if (seconds < 180) {
-    if (item.speed > 0) {
+    if (!item.locate) {
+      return nogps;
+    } else if (item.alarm) {
+      return alarm;
+    } else if (item.speed > 0) {
       return run;
     } else if (item.speed == 0) {
       return stop;
-    } else {
-      return nogps;
     }
   } else {
     return off;
@@ -107,13 +111,6 @@ const addFeature = (trackDataList: TrackDataProfile[]) => {
         anchor: [0.5, 0.5],
         rotation: (Math.PI / 180) * trackData.heading,
         src: getFeatureImageUrl(trackData)
-      }),
-      text: new Text({
-        font: "14px sans-serif",
-        rotation: (Math.PI / 180) * trackData.heading,
-        offsetX: 0,
-        offsetY: -20,
-        text: trackData.plateNo
       })
     });
     carFeature.setStyle(iconStyle);
@@ -129,13 +126,39 @@ nextTick(() => {
 const moveToMapCenter = (coordinate: Coordinate) => {
   view.setCenter(coordinate);
 };
-//移动车辆图标
+//移动车辆
 const moveCar = (trackData: TrackData) => {
   const currentFeature = carFeatureMap.get(trackData.mac) as Feature;
+
+  if (followFeature.value) {
+    const extData = followFeature.value.get("extData") as TrackDataProfile;
+    if (trackData.mac == extData.mac) {
+      //移动到地图中心
+      moveToMapCenter([trackData.longitude, trackData.latitude]);
+    }
+  }
   currentFeature.setGeometry(
     new Point([trackData.longitude, trackData.latitude])
   );
-  const extData = currentFeature.get("extData") as TrackDataProfile;
+  const currentFeatureStyle = currentFeature.getStyle() as Style;
+  const currentFeatureImage = new Icon({
+    anchor: [0.5, 0.5],
+    rotation: (Math.PI / 180) * trackData.heading,
+    src: getFeatureImageUrl(trackData)
+  });
+  currentFeatureStyle.setImage(currentFeatureImage);
+};
+//设置车辆跟踪
+const followFeature = ref<Feature>();
+const setFollowCar = (trackData: TrackData) => {
+  //取消原来追踪车辆的显示文字
+  if (followFeature.value) {
+    const followFeatureStyle = followFeature.value.getStyle() as Style;
+    followFeatureStyle.setText(null);
+  }
+  //设置追踪车辆的显示文字
+  followFeature.value = carFeatureMap.get(trackData.mac);
+  const extData = followFeature.value.get("extData") as TrackDataProfile;
   const iconStyle = new Style({
     image: new Icon({
       anchor: [0.5, 0.5],
@@ -150,9 +173,45 @@ const moveCar = (trackData: TrackData) => {
       text: extData.plateNo
     })
   });
-  currentFeature.setStyle(iconStyle);
+  followFeature.value.setStyle(iconStyle);
 };
-defineExpose({ moveToMapCenter, addFeature, initMap, moveCar });
+
+//车辆下线
+const setCarOffline = (macs: string[]) => {
+  macs.forEach((mac: string) => {
+    const feature = carFeatureMap.get(mac) as Feature;
+    const featureStyle = feature.getStyle() as Style;
+    const featurImage = featureStyle.getImage() as Icon;
+    if (featurImage.getSrc().indexOf("off") > -1) {
+      return;
+    }
+    console.log("车辆下线");
+    const extData = feature.get("extData") as TrackDataProfile;
+    const iconStyle = new Style({
+      image: new Icon({
+        anchor: [0.5, 0.5],
+        rotation: (Math.PI / 180) * extData.heading,
+        src: off
+      }),
+      text: new Text({
+        font: "14px sans-serif",
+        rotation: (Math.PI / 180) * extData.heading,
+        offsetX: 0,
+        offsetY: -20,
+        text: extData.plateNo
+      })
+    });
+    feature.setStyle(iconStyle);
+  });
+};
+defineExpose({
+  moveToMapCenter,
+  addFeature,
+  initMap,
+  moveCar,
+  setCarOffline,
+  setFollowCar
+});
 </script>
 
 <template>
@@ -175,6 +234,10 @@ defineExpose({ moveToMapCenter, addFeature, initMap, moveCar });
         <el-col :span="12">纬度</el-col>
         <el-col :span="12">{{ info.latitude }}</el-col>
       </el-row>
+      <el-row>
+        <el-col :span="12">定位时间</el-col>
+        <el-col :span="12">{{ info.gnssTime }}</el-col>
+      </el-row>
     </div>
   </div>
 </template>
@@ -194,7 +257,7 @@ defineExpose({ moveToMapCenter, addFeature, initMap, moveCar });
   border: 1px solid #cccccc;
   bottom: 12px;
   left: -50px;
-  min-width: 280px;
+  min-width: 480px;
 }
 
 .ol-popup:after,
