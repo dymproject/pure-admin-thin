@@ -49,7 +49,10 @@ import {
   ElTree,
   ElTreeSelect,
   ElTreeV2,
-  ElFooter
+  ElFooter,
+  ElTimePicker,
+  ElDatePicker,
+  ElSelect
 } from "element-plus";
 
 // Directives
@@ -102,7 +105,10 @@ const components = [
   ElFooter,
   ElTree,
   ElTreeSelect,
-  ElTreeV2
+  ElTreeV2,
+  ElTimePicker,
+  ElDatePicker,
+  ElSelect
 ];
 
 export function useElementPlus(app: App) {

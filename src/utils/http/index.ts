@@ -93,6 +93,8 @@ service.interceptors.response.use(
     }
   },
   error => {
+    // 关闭进度条动画
+    NProgress.done();
     ElMessage.error(error.toString());
     return Promise.reject(error);
   }

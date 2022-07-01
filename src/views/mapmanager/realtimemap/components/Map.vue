@@ -119,6 +119,10 @@ const addFeature = (trackDataList: TrackDataProfile[]) => {
     carFeatureMap.set(trackData.mac, carFeature);
   });
 };
+const clear = () => {
+  carFeatureMap = new Map();
+  carVectorSource.clear();
+};
 nextTick(() => {
   initMap();
 });
@@ -185,7 +189,6 @@ const setCarOffline = (macs: string[]) => {
     if (featurImage.getSrc().indexOf("off") > -1) {
       return;
     }
-    console.log("车辆下线");
     const extData = feature.get("extData") as TrackDataProfile;
     const iconStyle = new Style({
       image: new Icon({
@@ -205,6 +208,7 @@ const setCarOffline = (macs: string[]) => {
   });
 };
 defineExpose({
+  clear,
   moveToMapCenter,
   addFeature,
   initMap,

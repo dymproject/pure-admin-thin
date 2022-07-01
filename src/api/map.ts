@@ -14,6 +14,14 @@ export const getLastTrack = () => {
   });
 };
 
+export const getHistoryTrack = (params: any) => {
+  return request({
+    url: "/map/history",
+    method: "get",
+    params
+  });
+};
+
 /**
  * 解密 JWT token 的信息
  * @param token jwt token 字符串

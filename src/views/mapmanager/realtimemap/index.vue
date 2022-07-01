@@ -58,7 +58,9 @@ const listenTracks = (trackData: TrackData) => {
   //填充trackdatamap
   trackDataMap.set(trackData.mac, trackData);
   //移动车辆
-  map.value.moveCar(trackData);
+  if (trackData.locate) {
+    map.value.moveCar(trackData);
+  }
   //更新实时table
   const record: TrackDataProfile = tableData.value.find(
     (data: TrackDataProfile) => {
@@ -123,14 +125,16 @@ refreshCarStatus();
   <div>
     <el-row :gutter="20">
       <el-col :span="6">
-        <car-tree
-          ref="tree"
-          class="tree-bg-color"
-          @reload-tree-data="reloadTreeData"
-          @node-contextmenu="treeRightClickEvent"
-          @node-click="treeClickEvent"
-          :height="880"
-        />
+        <div class="tree-div">
+          <car-tree
+            ref="tree"
+            class="car-tree"
+            @reload-tree-data="reloadTreeData"
+            @node-contextmenu="treeRightClickEvent"
+            @node-click="treeClickEvent"
+            :height="860"
+          />
+        </div>
       </el-col>
       <el-col :span="18">
         <el-row>
@@ -185,7 +189,14 @@ refreshCarStatus();
 </template>
 
 <style scoped>
-.tree-bg-color {
+.car-tree {
   background-color: #d7f7ed;
+}
+
+.tree-div {
+  padding: 10px;
+  background-color: #d7f7ed;
+  position: relative;
+  overflow: hidden;
 }
 </style>
