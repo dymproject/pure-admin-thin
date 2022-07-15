@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, reactive } from "vue";
+import { reactive } from "vue";
 import { getCarTree } from "/@/api/map";
 const selectOption = reactive({
   data: [],
@@ -10,9 +10,8 @@ const initialSelect = () => {
     selectOption.data = result;
   });
 };
-nextTick(() => {
-  initialSelect();
-});
+initialSelect();
+defineExpose({ initialSelect });
 </script>
 
 <template>

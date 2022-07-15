@@ -1,22 +1,31 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import CarTreeSelect from "/@/components/CarTreeSelect/CarTreeSelect.vue";
-import openMap from "../realtimemap/components/Map.vue";
+import openMap from "/@/components/OpenlayersMap/Map.vue";
 import { getHistoryTrack } from "/@/api/map";
 import { VXETable } from "vxe-table";
 const searchData = reactive({
   carId: null,
   minSpeed: 0,
-  locate: undefined,
-  startTime: new Date().toLocaleString(),
-  endTime: new Date().toLocaleString()
+  locate: true,
+  startTime: new Date().toLocaleDateString() + " 00:00:00",
+  endTime: new Date().toLocaleDateString() + " 23:59:59"
 });
+
 const formRules = {
   carId: [{ required: true, message: "请选择车辆" }]
 };
 const tableData = ref();
 const trackTable = ref();
 const map = ref();
+
+onMounted(() => {
+  var olviewports = document.getElementsByClassName("ol-viewport");
+  if (olviewports.length > 1) {
+    olviewports[0].setAttribute("style", "display:none");
+  }
+});
+
 const replayOption = reactive({
   playSpeed: 1,
   playInterval: null
@@ -35,14 +44,16 @@ const searchEvent = () => {
       });
       return;
     }
-    //填充tableId
-    result.forEach(element => {
-      element.tableIndex = element.gnssTime.getTime();
+    result.forEach(trackData => {
+      trackData.tableIndex = new Date(trackData.gnssTime).getTime();
     });
+    //划线
+    map.value.addLine(result);
+    //填充table
     tableData.value = result;
     var trackData = result[0];
     map.value.moveToMapCenter([trackData.longitude, trackData.latitude]);
-    map.value.addFeature([trackData]);
+    map.value.addCar([trackData]);
     let i = 1;
 
     replayOption.playInterval = setInterval(() => {
@@ -50,7 +61,6 @@ const searchEvent = () => {
       map.value.moveCar(result[i]);
 
       var row = trackTable.value.getRowById(result[i].tableIndex);
-      console.log(row);
       trackTable.value.setCurrentRow(row);
       trackTable.value.scrollToRow(row);
       i++;
@@ -75,8 +85,8 @@ const searchEvent = () => {
             </vxe-form-item>
             <vxe-form-item title="时间" field="replayTime" :item-render="{}">
               <template #default="{ data }">
-                <vxe-input v-model="data.startTime" type="datetime" multiple />
-                <vxe-input v-model="data.endTime" type="datetime" multiple />
+                <vxe-input v-model="data.startTime" type="datetime" />
+                <vxe-input v-model="data.endTime" type="datetime" />
               </template>
             </vxe-form-item>
             <vxe-form-item title="最小速度" field="minSpeed" :item-render="{}">
@@ -123,7 +133,9 @@ const searchEvent = () => {
         </el-col>
       </el-row>
       <el-row style="margin-top: 15px">
-        <el-col :span="24"> <open-map ref="map" /></el-col>
+        <el-col :span="24">
+          <open-map ref="map" :zoom="12" :center="[116.405668, 39.90607]" />
+        </el-col>
       </el-row>
       <el-row>
         <el-col :span="24">
@@ -136,7 +148,7 @@ const searchEvent = () => {
             :row-config="{
               isCurrent: true,
               isHover: true,
-              keyField: 'gnssTime'
+              keyField: 'tableIndex'
             }"
             :data="tableData"
             class="footer"

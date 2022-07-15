@@ -6,7 +6,6 @@ import {
   VXETable,
 
   // 表格功能
-  Header,
   Footer,
   Icon,
   Filter,
@@ -45,9 +44,11 @@ import {
   // 表格
   Table
 } from "vxe-table";
-
+import XEUtils from "xe-utils";
+import zhCN from "vxe-table/es/locale/lang/zh-CN";
 // 全局默认参数
 VXETable.setup({
+  i18n: (key, args) => XEUtils.toFormatString(XEUtils.get(zhCN, key), args),
   size: "small",
   version: 0,
   zIndex: 1002,
@@ -91,7 +92,6 @@ VXETable.setup({
 
 export function useTable(app: App) {
   app
-    .use(Header)
     .use(Footer)
     .use(Icon)
     .use(Filter)

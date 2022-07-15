@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { Map as OpenLayersMap, Overlay, View } from "ol";
 import "ol/ol.css";
 import { Vector as VectorSource, XYZ } from "ol/source";
-import { Icon, Style, Text } from "ol/style";
+import { Icon, Stroke, Style, Text } from "ol/style";
 import { Vector as VectorLayer, Tile as TileLayer } from "ol/layer";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import { Coordinate } from "ol/coordinate";
+import { LineString } from "ol/geom";
 
 import { TrackData, TrackDataProfile } from "/@/api/map";
 import run from "/@/assets/car/run.png";
@@ -15,11 +16,15 @@ import stop from "/@/assets/car/stop.png";
 import alarm from "/@/assets/car/alarm.png";
 import nogps from "/@/assets/car/nogps.png";
 import off from "/@/assets/car/off.png";
+import start from "/@/assets/car/start.png";
+import end from "/@/assets/car/end.png";
 
+const props = defineProps<{ zoom: number; center: Array<number> }>();
+const olMap = ref<OpenLayersMap>();
 //视图
 const view = new View({
-  center: [116.405668, 39.90607],
-  zoom: 12,
+  center: props.center,
+  zoom: props.zoom,
   projection: "EPSG:4326"
 });
 //底图
@@ -50,14 +55,14 @@ const initMap = () => {
     stopEvent: false
   });
 
-  const map = new OpenLayersMap({
+  olMap.value = new OpenLayersMap({
     layers: [baseTileLayer, carVectorLayer],
     target: "map",
     view: view,
     overlays: [popupOverLay]
   });
-  map.on("click", function (evt) {
-    const feature = map.forEachFeatureAtPixel(
+  olMap.value.on("click", function (evt) {
+    const feature = olMap.value.forEachFeatureAtPixel(
       evt.pixel,
       function (feature: Feature) {
         return feature;
@@ -78,6 +83,10 @@ const initMap = () => {
   });
 };
 
+onMounted(() => {
+  initMap();
+});
+
 const getFeatureImageUrl = (item: TrackData): string => {
   let seconds =
     (new Date().getTime() - new Date(item.gnssTime).getTime()) / 1000;
@@ -97,7 +106,52 @@ const getFeatureImageUrl = (item: TrackData): string => {
 };
 let carFeatureMap = new Map();
 
-const addFeature = (trackDataList: TrackDataProfile[]) => {
+//画线
+const addLine = (trackDataList: TrackDataProfile[]) => {
+  let path = [];
+  trackDataList.forEach(trackData => {
+    path.push([trackData.longitude, trackData.latitude]);
+  });
+  const line = new Feature({
+    geometry: new LineString(path)
+  });
+  const lineStyle = new Style({
+    stroke: new Stroke({ color: "#ff0000", width: 3 })
+  });
+  line.setStyle(lineStyle);
+  carVectorSource.addFeature(line);
+  //设置起终点
+  const lineGeometry = line.getGeometry();
+  const startPoint = lineGeometry.getFirstCoordinate();
+  const endPoint = lineGeometry.getLastCoordinate();
+  const startFeature = new Feature({
+    geometry: new Point(startPoint),
+    name: "start",
+    population: 4000,
+    rainfall: 500
+  });
+  const iconStyle = new Style({
+    image: new Icon({
+      anchor: [0.5, 0.8],
+      src: start
+    })
+  });
+  startFeature.setStyle(iconStyle);
+  const endFeature = startFeature.clone();
+  endFeature.setGeometry(new Point(endPoint));
+  const endIconStyle = iconStyle.clone();
+  endIconStyle.setImage(
+    new Icon({
+      anchor: [0.5, 0.8],
+      src: end
+    })
+  );
+  endFeature.setStyle(endIconStyle);
+  carVectorSource.addFeature(startFeature);
+  carVectorSource.addFeature(endFeature);
+};
+
+const addCar = (trackDataList: TrackDataProfile[]) => {
   //车辆数据
   trackDataList.forEach(trackData => {
     const carFeature = new Feature({
@@ -123,9 +177,7 @@ const clear = () => {
   carFeatureMap = new Map();
   carVectorSource.clear();
 };
-nextTick(() => {
-  initMap();
-});
+
 //以此点为中心，移动地图
 const moveToMapCenter = (coordinate: Coordinate) => {
   view.setCenter(coordinate);
@@ -195,22 +247,17 @@ const setCarOffline = (macs: string[]) => {
         anchor: [0.5, 0.5],
         rotation: (Math.PI / 180) * extData.heading,
         src: off
-      }),
-      text: new Text({
-        font: "14px sans-serif",
-        rotation: (Math.PI / 180) * extData.heading,
-        offsetX: 0,
-        offsetY: -20,
-        text: extData.plateNo
       })
     });
     feature.setStyle(iconStyle);
   });
 };
 defineExpose({
+  olMap,
   clear,
   moveToMapCenter,
-  addFeature,
+  addCar,
+  addLine,
   initMap,
   moveCar,
   setCarOffline,

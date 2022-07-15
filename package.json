@@ -56,7 +56,7 @@
     "vue-i18n": "^9.2.0-beta.33",
     "vue-router": "^4.0.14",
     "vue-types": "^4.1.1",
-    "vxe-table": "^4.2.2-beta.1",
+    "vxe-table": "^4.2.8",
     "xe-utils": "^3.5.4"
   },
   "devDependencies": {

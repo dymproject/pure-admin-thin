@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { TreeNodeData } from "element-plus/es/components/tree-v2/src/types";
-import openMap from "./components/Map.vue";
+import openMap from "/@/components/OpenlayersMap/Map.vue";
 import carTree from "./components/CarTree.vue";
 import { decryptJWT, getLastTrack } from "/@/api/map";
 import { TrackData, TrackDataProfile } from "/@/api/map";
 import { HubConnectionBuilder } from "@microsoft/signalr";
 import { storageSession } from "/@/utils/storage";
 import { loadEnv } from "@build/index";
-
 const tableData = ref([]);
 const trackTable = ref();
 //位置数据map
@@ -17,14 +16,19 @@ let trackDataMap = new Map();
 const getList = () => {
   getLastTrack().then((result: any) => {
     tableData.value = result;
-    map.value.addFeature(result);
+    map.value.addCar(result);
   });
 };
 getList();
 
 const map = ref();
 const tree = ref();
-
+onMounted(() => {
+  var olviewports = document.getElementsByClassName("ol-viewport");
+  if (olviewports.length > 1) {
+    olviewports[0].setAttribute("style", "display:none");
+  }
+});
 const treeClickEvent = (data: TreeNodeData) => {
   if (!data.isOrganization) {
     const { trackData } = data;
@@ -139,7 +143,7 @@ refreshCarStatus();
       <el-col :span="18">
         <el-row>
           <el-col>
-            <open-map ref="map" />
+            <open-map ref="map" :zoom="12" :center="[116.405668, 39.90607]" />
           </el-col>
           <el-col>
             <vxe-table

@@ -22,7 +22,6 @@ export const usePermissionStore = defineStore({
   actions: {
     // 获取异步路由菜单
     asyncActionRoutes(routes) {
-      if (this.wholeMenus.length > 0) return;
       this.wholeMenus = filterTree(
         ascending(this.constantMenus.concat(routes))
       );

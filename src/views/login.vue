@@ -13,7 +13,7 @@ import { ElLoading } from "element-plus";
 
 const router = useRouter();
 
-let user = ref("admin");
+let user = ref("test1");
 let pwd = ref("123456");
 
 const onLogin = (): void => {
