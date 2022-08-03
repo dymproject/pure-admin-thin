@@ -3,12 +3,13 @@ import { onMounted, reactive, ref } from "vue";
 import { Map as OpenLayersMap, Overlay, View } from "ol";
 import "ol/ol.css";
 import { Vector as VectorSource, XYZ } from "ol/source";
-import { Icon, Stroke, Style, Text } from "ol/style";
+import { Fill, Icon, Stroke, Style, Text } from "ol/style";
 import { Vector as VectorLayer, Tile as TileLayer } from "ol/layer";
 import Feature from "ol/Feature";
 import Point from "ol/geom/Point";
 import { Coordinate } from "ol/coordinate";
 import { LineString } from "ol/geom";
+import { ScaleLine, defaults as defaultControls } from "ol/control";
 
 import { TrackData, TrackDataProfile } from "/@/api/map";
 import run from "/@/assets/car/run.png";
@@ -56,6 +57,11 @@ const initMap = () => {
   });
 
   olMap.value = new OpenLayersMap({
+    controls: defaultControls().extend([
+      new ScaleLine({
+        units: "metric"
+      })
+    ]),
     layers: [baseTileLayer, carVectorLayer],
     target: "map",
     view: view,
@@ -222,10 +228,13 @@ const setFollowCar = (trackData: TrackData) => {
       src: getFeatureImageUrl(trackData)
     }),
     text: new Text({
-      font: "14px sans-serif",
-      rotation: (Math.PI / 180) * trackData.heading,
+      font: "12px sans-serif",
+      backgroundFill: new Fill({ color: "#FFFFFF" }),
+      fill: new Fill({ color: "#0000FF" }),
+      stroke: new Stroke({ width: 0.5 }),
+      // rotation: (Math.PI / 180) * trackData.heading,
       offsetX: 0,
-      offsetY: -20,
+      offsetY: -25,
       text: extData.plateNo
     })
   });

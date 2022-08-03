@@ -77,5 +77,6 @@ export interface CarTreeProfile {
   onlineCount: number;
   icon: string;
   mac: string;
+  mtype: number;
   color: string;
 }

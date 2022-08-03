@@ -55,11 +55,17 @@ const updateTreeNode = (trackData: TrackData) => {
 
 initTree();
 
-defineExpose({ treeData, updateTreeNode });
+defineExpose({ treeData, updateTreeNode, treeRef });
 </script>
 
 <template>
-  <el-tree-v2 ref="treeRef" :data="treeData" :props="props">
+  <el-tree-v2
+    ref="treeRef"
+    node-key="id"
+    show-checkbox
+    :data="treeData"
+    :props="props"
+  >
     <template #default="{ node, data }">
       <span class="custom-tree-node">
         <span style="margin: 5px">

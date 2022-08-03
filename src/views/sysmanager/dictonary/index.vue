@@ -161,7 +161,7 @@ const deleteEvent = async (row: any) => {
         >
           <template #content="{ row }">
             <div class="expand-wrapper">
-              <vxe-table :data="row.childDictonaryList">
+              <vxe-table width="90%" :data="row.childDictonaryList">
                 <vxe-column field="name" title="名称" />
                 <vxe-column field="code" title="编码" />
                 <vxe-column field="rank" title="排序" />
@@ -292,6 +292,6 @@ const deleteEvent = async (row: any) => {
 
 <style scoped>
 .expand-wrapper {
-  padding: 20px;
+  padding: 10px;
 }
 </style>
