@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { nextTick, reactive, ref } from "vue";
 import { Map as OpenLayersMap, Overlay, View } from "ol";
 import "ol/ol.css";
 import { Vector as VectorSource, XYZ } from "ol/source";
@@ -11,7 +11,7 @@ import { Coordinate } from "ol/coordinate";
 import { LineString } from "ol/geom";
 import { ScaleLine, defaults as defaultControls } from "ol/control";
 
-import { TrackData, TrackDataProfile } from "/@/api/map";
+import { mapConfig, TrackData, TrackDataProfile } from "/@/api/map";
 import run from "/@/assets/car/run.png";
 import stop from "/@/assets/car/stop.png";
 import alarm from "/@/assets/car/alarm.png";
@@ -20,7 +20,8 @@ import off from "/@/assets/car/off.png";
 import start from "/@/assets/car/start.png";
 import end from "/@/assets/car/end.png";
 
-const props = defineProps<{ zoom: number; center: Array<number> }>();
+const props =
+  defineProps<{ zoom: number; center: Array<number>; url: string }>();
 const olMap = ref<OpenLayersMap>();
 //视图
 const view = new View({
@@ -31,7 +32,7 @@ const view = new View({
 //底图
 const baseTileLayer = new TileLayer({
   source: new XYZ({
-    url: "http://wprd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=7&x={x}&y={y}&z={z}"
+    url: props.url
   })
 });
 //车辆资源
@@ -48,6 +49,7 @@ const info = reactive({
   latitude: null,
   gnssTime: null
 });
+
 const initMap = () => {
   const infoPopup = document.getElementById("popup");
   const popupOverLay = new Overlay({
@@ -55,7 +57,6 @@ const initMap = () => {
     positioning: "bottom-center",
     stopEvent: false
   });
-
   olMap.value = new OpenLayersMap({
     controls: defaultControls().extend([
       new ScaleLine({
@@ -89,9 +90,22 @@ const initMap = () => {
   });
 };
 
-onMounted(() => {
+nextTick(() => {
   initMap();
 });
+
+const reRenderMap = (config: mapConfig) => {
+  const view = olMap.value.getView();
+  view.setZoom(config.zoom);
+  view.setCenter(config.center);
+  olMap.value.addLayer(
+    new TileLayer({
+      source: new XYZ({
+        url: config.url
+      })
+    })
+  );
+};
 
 const getFeatureImageUrl = (item: TrackData): string => {
   let seconds =
@@ -263,6 +277,7 @@ const setCarOffline = (macs: string[]) => {
 };
 defineExpose({
   olMap,
+  reRenderMap,
   clear,
   moveToMapCenter,
   addCar,

@@ -3,7 +3,7 @@ import { onMounted, reactive, ref } from "vue";
 import openMap from "/@/components/OpenlayersMap/Map.vue";
 import carTree from "./components/CarTree.vue";
 import { CarTreeProfile, decryptJWT, getLastTrack } from "/@/api/map";
-import { TrackData, TrackDataProfile } from "/@/api/map";
+import { TrackData, TrackDataProfile, getMapConfig } from "/@/api/map";
 import { HubConnectionBuilder } from "@microsoft/signalr";
 import { storageSession } from "/@/utils/storage";
 import { loadEnv } from "@build/index";
@@ -21,14 +21,23 @@ const commandData = ref([]);
 const cmdTable = ref();
 //标签页model-value
 const tabsValue = ref("first");
+//地图配置项
+const mapConfig = reactive({
+  zoom: 2,
+  url: "http://wprd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=7&x={x}&y={y}&z={z}",
+  center: [116.405668, 39.90607]
+});
 
-const getList = () => {
-  getLastTrack().then((result: any) => {
-    trackTableData.value = result;
-    map.value.addCar(result);
-  });
-};
-getList();
+//加载地图配置
+getMapConfig("map-option").then((result: any) => {
+  const options = eval("(" + result + ")");
+  map.value.reRenderMap(options);
+});
+//初始化地图车辆
+getLastTrack().then((result: any) => {
+  trackTableData.value = result;
+  map.value.addCar(result);
+});
 
 const map = ref();
 const tree = ref();
@@ -220,7 +229,7 @@ const listenTracks = (trackData: TrackData) => {
 };
 
 const listenTreeData = (data: any) => {
-  tree.value.setData(data);
+  tree.value.treeRef.setData(data);
 };
 const listenOfflineCar = (data: string[]) => {
   map.value.setCarOffline(data);
@@ -284,16 +293,10 @@ connection.on("ListenParameters", listenParameters);
 const reloadTreeData = () => {
   connection.invoke("ReloadTreeData", token.TenantId, token.OrganizationId);
 };
-const RefreshOfflineCars = () => {
-  setInterval(() => {
-    connection.invoke(
-      "RefreshOfflineCars",
-      token.TenantId,
-      token.OrganizationId
-    );
-  }, 1000 * 20);
-};
-RefreshOfflineCars();
+
+setInterval(() => {
+  connection.invoke("RefreshOfflineCars", token.TenantId, token.OrganizationId);
+}, 1000 * 20);
 </script>
 
 <template>
@@ -388,7 +391,12 @@ RefreshOfflineCars();
       <el-col :span="18">
         <el-row>
           <el-col>
-            <open-map ref="map" :zoom="12" :center="[116.405668, 39.90607]" />
+            <open-map
+              ref="map"
+              :zoom="mapConfig.zoom"
+              :url="mapConfig.url"
+              :center="mapConfig.center"
+            />
           </el-col>
           <el-col>
             <el-tabs type="border-card" v-model="tabsValue">

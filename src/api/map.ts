@@ -22,6 +22,13 @@ export const getHistoryTrack = (params: any) => {
   });
 };
 
+export const getMapConfig = (key: string) => {
+  return request({
+    url: "/configdata/" + key + "/configvalue",
+    method: "get"
+  });
+};
+
 /**
  * 解密 JWT token 的信息
  * @param token jwt token 字符串
@@ -79,4 +86,10 @@ export interface CarTreeProfile {
   mac: string;
   mtype: number;
   color: string;
+}
+
+export interface mapConfig {
+  zoom: number;
+  url: string;
+  center: number[];
 }
